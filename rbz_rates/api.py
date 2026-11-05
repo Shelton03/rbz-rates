@@ -13,11 +13,27 @@ from functools import lru_cache
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
+
+from . import access
 
 DATA = Path(os.environ.get("RBZ_DATA_DIR", "data"))
-app = FastAPI(title="RBZ Exchange Rates",
-              description="Unofficial mirror of Reserve Bank of Zimbabwe daily interbank rates. "
-                          "Rates are as published by RBZ; check the source PDF before relying on a figure.")
+app = FastAPI(
+    title="RBZ Exchange Rates",
+    description=(
+        "Unofficial mirror of Reserve Bank of Zimbabwe daily interbank rates. "
+        "Rates are as published by RBZ; check the source PDF before relying on a figure.\n\n"
+        f"**Access:** without a key, {access.ANON_DAILY} requests per day. With a free API key, "
+        f"{access.KEY_DAILY:,} per day: send it as `Authorization: Bearer <key>` or `X-API-Key: <key>`. "
+        "Every response carries `X-RateLimit-Limit` and `X-RateLimit-Remaining`."
+    ),
+)
+app.middleware("http")(access.gate)
+# added after the gate so it wraps it: 401/429 responses carry CORS headers too
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"],
+                   allow_headers=["Authorization", "X-API-Key"],
+                   expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"])
+app.include_router(access.admin)
 
 
 # ---------------------------------------------------------------- data access

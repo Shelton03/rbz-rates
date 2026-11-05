@@ -1,33 +1,75 @@
 name: deploy
 # Deploys the API (worker/) with the current data/ to Cloudflare Workers.
 # Runs after a scrape that committed new data, on API/worker code changes, or by hand.
-# Needs repo secrets CLOUDFLARE_API_TOKEN (template "Edit Cloudflare Workers") and CLOUDFLARE_ACCOUNT_ID.
+#
+# Repo secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN   token with Workers Scripts: Edit and D1: Edit
+#   CLOUDFLARE_ACCOUNT_ID  your Cloudflare account id
+#   RBZ_ADMIN_SECRET       shared with the website (Vercel env RBZ_ADMIN_SECRET)
+#   RBZ_ANON_SALT          any long random string
+# The first run creates the D1 database; every run applies pending migrations.
 on:
   workflow_call:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["rbz_rates/api.py", "worker/**"]
+    paths: ["rbz_rates/api.py", "rbz_rates/access.py", "worker/**"]
 concurrency: deploy
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
-      - uses: actions/checkout@v4
-        with: { ref: main }   # include the data commit the scrape job just pushed
-      - uses: astral-sh/setup-uv@v6
-      - uses: actions/setup-node@v4
-        with: { node-version: "22" }
-      - name: Bundle the API module into the Worker
-        run: cp rbz_rates/api.py worker/src/rbz_api.py
-      - name: Deploy
-        working-directory: worker
+      - name: Check secrets
+        id: check
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "::notice::CLOUDFLARE_API_TOKEN secret not set; skipping deploy"
-            exit 0
+            echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
-          uv run pywrangler deploy
+      - uses: actions/checkout@v4
+        if: steps.check.outputs.skip != 'true'
+        with: { ref: main }   # include the data commit the scrape job just pushed
+      - uses: astral-sh/setup-uv@v6
+        if: steps.check.outputs.skip != 'true'
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.skip != 'true'
+        with: { node-version: "22" }
+      - name: Bundle the API modules into the Worker
+        if: steps.check.outputs.skip != 'true'
+        run: worker/sync.sh
+      - name: Find or create the D1 database
+        if: steps.check.outputs.skip != 'true'
+        working-directory: worker
+        run: |
+          find_id() { npx --yes wrangler d1 list --json | jq -r '.[] | select(.name=="rbz-rates") | .uuid'; }
+          id=$(find_id)
+          if [ -z "$id" ]; then
+            npx --yes wrangler d1 create rbz-rates
+            id=$(find_id)
+          fi
+          test -n "$id"
+          sed -i "s/REPLACE_WITH_D1_DATABASE_ID/$id/" wrangler.jsonc
+      - name: Apply database migrations
+        if: steps.check.outputs.skip != 'true'
+        working-directory: worker
+        run: npx --yes wrangler d1 migrations apply rbz-rates --remote
+      - name: Deploy
+        if: steps.check.outputs.skip != 'true'
+        working-directory: worker
+        run: uv run pywrangler deploy
+      - name: Set Worker secrets
+        if: steps.check.outputs.skip != 'true'
+        working-directory: worker
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ADMIN_SECRET: ${{ secrets.RBZ_ADMIN_SECRET }}
+          ANON_SALT: ${{ secrets.RBZ_ANON_SALT }}
+        run: |
+          umask 077
+          f=$(mktemp)
+          jq -n --arg a "$ADMIN_SECRET" --arg s "$ANON_SALT" \
+            '{} + (if $a != "" then {ADMIN_SECRET: $a} else {} end) + (if $s != "" then {ANON_SALT: $s} else {} end)' > "$f"
+          if [ "$(jq length "$f")" -gt 0 ]; then npx --yes wrangler secret bulk "$f"; fi
+          rm -f "$f"

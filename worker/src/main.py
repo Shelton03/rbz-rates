@@ -1,7 +1,7 @@
-"""Cloudflare Workers entrypoint. The API itself lives in rbz_rates/api.py;
-rbz_api.py next to this file is a copy of it, refreshed by `make sync` / CI before deploy."""
+"""Cloudflare Workers entrypoint. The API lives in ../rbz_rates/ at the repo root;
+src/rbz_rates/ is a copy of the modules it needs, refreshed by ./sync.sh (CI runs it before deploy)."""
 from workers import asgi
 
-from rbz_api import app
+from rbz_rates.api import app
 
 Default = asgi.entrypoint(app)

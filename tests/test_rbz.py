@@ -259,7 +259,102 @@ def test_fetcher_conditional_request(monkeypatch):
 
 
 def test_worker_bundles_current_api():
-    """worker/src/rbz_api.py is a copy of rbz_rates/api.py (CI re-copies it before deploy)."""
+    """worker/src/rbz_rates/ holds copies of the API modules (CI re-copies them before deploy)."""
     root = Path(__file__).parent.parent
-    assert (root / "worker/src/rbz_api.py").read_text() == (root / "rbz_rates/api.py").read_text(), \
-        "run: cp rbz_rates/api.py worker/src/rbz_api.py"
+    for name in ("api.py", "access.py"):
+        assert (root / "worker/src/rbz_rates" / name).read_text() == (root / "rbz_rates" / name).read_text(), \
+            "run: worker/sync.sh"
+
+
+# ---------------------------------------------------------------- access control
+
+@pytest.fixture
+def gated(tmp_path, monkeypatch, day, pipe):
+    """API client with the gate on: SQLite DB with the real migration applied."""
+    import sqlite3
+
+    import rbz_rates.access as access
+    import rbz_rates.api as api
+    (tmp_path / "daily").mkdir()
+    (tmp_path / "daily" / "2026-11-05.json").write_text(json.dumps(day))
+    pipe.rebuild_indexes()
+    db = tmp_path / "access.db"
+    sql = (Path(__file__).parent.parent / "worker/migrations/0001_access.sql").read_text()
+    sqlite3.connect(db).executescript(sql)
+    monkeypatch.setattr(api, "DATA", tmp_path)
+    monkeypatch.setenv("RBZ_DB", str(db))
+    monkeypatch.setenv("ADMIN_SECRET", "s3cret")
+    monkeypatch.setenv("ANON_SALT", "salt")
+    monkeypatch.setattr(access, "_local", None)
+    monkeypatch.setattr(access, "_key_cache", {})
+    monkeypatch.setattr(access, "ANON_DAILY", 3)
+    monkeypatch.setattr(access, "KEY_DAILY", 5)
+    api._load_file.cache_clear()
+    from fastapi.testclient import TestClient
+    return TestClient(api.app)
+
+
+ADMIN = {"X-Admin-Secret": "s3cret"}
+
+
+def _make_key(c, user="42", name="laptop"):
+    assert c.put(f"/admin/users/{user}", json={"login": "shelton"}, headers=ADMIN).status_code == 200
+    r = c.post(f"/admin/users/{user}/keys", json={"name": name}, headers=ADMIN)
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+def test_anonymous_daily_limit(gated):
+    for i in range(3):
+        r = gated.get("/v1/latest")
+        assert r.status_code == 200 and r.headers["x-ratelimit-remaining"] == str(2 - i)
+    r = gated.get("/v1/latest", headers={"Origin": "https://example.com"})
+    assert r.status_code == 429
+    assert "/dashboard" in r.json()["detail"]                       # tells them where to get a key
+    assert r.headers["access-control-allow-origin"] == "*"          # browsers can read the error
+    assert r.headers["x-ratelimit-reset"].endswith("T00:00:00Z")
+    assert gated.get("/docs").status_code == 200                    # docs are never counted
+
+
+def test_api_key_lifecycle(gated):
+    created = _make_key(gated)
+    key = created["key"]
+    assert key.startswith("rbz_")
+    auth = {"Authorization": f"Bearer {key}"}
+    r = gated.get("/v1/convert", params={"amount": 1, "from": "USD", "to": "ZAR"}, headers=auth)
+    assert r.status_code == 200 and r.headers["x-ratelimit-limit"] == "5"
+    assert gated.get("/v1/latest", headers={"X-API-Key": key}).status_code == 200
+    assert gated.get("/v1/latest", params={"api_key": key}).status_code == 200
+    assert gated.get("/v1/latest", headers={"X-API-Key": "rbz_wrong"}).status_code == 401
+
+    keys = gated.get("/admin/users/42/keys", headers=ADMIN).json()["keys"]
+    assert keys[0]["today"] == 3 and keys[0]["prefix"] == key[:10] and "hash" not in keys[0]
+    assert "key" not in keys[0]                                     # the full key is never shown again
+    usage = gated.get("/admin/users/42/usage", headers=ADMIN).json()["rows"]
+    assert {(u["endpoint"], u["count"]) for u in usage} == {("/v1/convert", 1), ("/v1/latest", 2)}
+
+    for _ in range(2):
+        assert gated.get("/v1/latest", headers=auth).status_code == 200
+    r = gated.get("/v1/latest", headers=auth)
+    assert r.status_code == 429 and "/dashboard" not in r.json()["detail"]
+
+    assert gated.delete(f"/admin/users/42/keys/{created['id']}", headers=ADMIN).status_code == 200
+    assert gated.get("/v1/latest", headers=auth).status_code == 401  # revoked: rejected immediately
+    assert gated.delete(f"/admin/users/42/keys/{created['id']}", headers=ADMIN).status_code == 404
+
+
+def test_key_limits_and_admin_auth(gated):
+    for i in range(3):
+        _make_key(gated, name=f"k{i}")
+    r = gated.post("/admin/users/42/keys", json={"name": "fourth"}, headers=ADMIN)
+    assert r.status_code == 409
+    assert gated.post("/admin/users/nobody/keys", json={"name": "x"}, headers=ADMIN).status_code == 404
+    assert gated.get("/admin/stats").status_code == 401                         # no secret
+    assert gated.get("/admin/stats", headers={"X-Admin-Secret": "nope"}).status_code == 401
+    other = gated.get("/admin/users/99/keys", headers=ADMIN).json()["keys"]
+    assert other == []                                                          # keys are per user
+    gated.get("/v1/latest")
+    s = gated.get("/admin/stats", headers=ADMIN).json()
+    assert s["users"] == 1 and s["active_keys"] == 3
+    assert s["by_day"][0]["anonymous"] == 1 and s["by_endpoint"][0]["endpoint"] == "/v1/latest"
+    assert "/admin/stats" not in gated.get("/openapi.json").text                # admin hidden from docs

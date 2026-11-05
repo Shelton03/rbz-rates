@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+/* Dark mode follows data-theme on <html> (set before paint by the script in layout.tsx). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+  --background: oklch(98.5% 0.005 85);
+  --foreground: oklch(22% 0.02 255);
+  --card: oklch(99.5% 0.003 85);
+  --muted: oklch(95.5% 0.006 85);
+  --muted-foreground: oklch(48% 0.02 255);
+  --border: oklch(90% 0.01 85);
+  --primary: oklch(32% 0.07 258);
+  --primary-foreground: oklch(98.5% 0.005 85);
+  --accent: oklch(55% 0.07 195);
+  --accent-foreground: oklch(98.5% 0.005 85);
+  --destructive: oklch(52% 0.13 25);
+  --ring: oklch(55% 0.07 195);
+
+  /* charts: validated categorical slots (blue, orange) against --card, light */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --viz-grid: #e7e4dd;
+  --viz-axis: #c9c5bb;
+  --meter-track: color-mix(in oklab, var(--series-1) 18%, var(--card));
+  --status-warning: #fab219;
+  --status-critical: #d03b3b;
+  --status-good: #0ca30c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --background: oklch(18% 0.015 255);
+    --foreground: oklch(93% 0.01 85);
+    --card: oklch(21.5% 0.018 255);
+    --muted: oklch(24% 0.018 255);
+    --muted-foreground: oklch(68% 0.02 250);
+    --border: oklch(30% 0.02 255);
+    --primary: oklch(75% 0.07 220);
+    --primary-foreground: oklch(18% 0.015 255);
+    --accent: oklch(65% 0.08 195);
+    --accent-foreground: oklch(18% 0.015 255);
+    --destructive: oklch(60% 0.15 25);
+    --ring: oklch(65% 0.08 195);
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --viz-grid: #232a34;
+    --viz-axis: #353d49;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: oklch(18% 0.015 255);
+  --foreground: oklch(93% 0.01 85);
+  --card: oklch(21.5% 0.018 255);
+  --muted: oklch(24% 0.018 255);
+  --muted-foreground: oklch(68% 0.02 250);
+  --border: oklch(30% 0.02 255);
+  --primary: oklch(75% 0.07 220);
+  --primary-foreground: oklch(18% 0.015 255);
+  --accent: oklch(65% 0.08 195);
+  --accent-foreground: oklch(18% 0.015 255);
+  --destructive: oklch(60% 0.15 25);
+  --ring: oklch(65% 0.08 195);
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --viz-grid: #232a34;
+  --viz-axis: #353d49;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}

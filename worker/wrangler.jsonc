@@ -13,5 +13,17 @@
     "run_worker_first": true
   },
   // Workers Logs (free plan): request logs + CPU time in the dashboard
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // Accounts, API keys and usage counters. Create once with `npx wrangler d1 create rbz-rates`
+  // and paste the database_id it prints. Schema: migrations/ (applied by the deploy workflow).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "rbz-rates",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Secrets (not in this file): ADMIN_SECRET, ANON_SALT. Locally they go in .dev.vars.
+  "vars": { "SITE_URL": "https://rbz-rates.vercel.app" }
 }

@@ -75,27 +75,57 @@ the USD column for X/USD, the ZWG column for X/ZWG. RBZ prints no direct rate
 for other pairs (e.g. GBP/ZAR), so those are crossed through USD, never ZWG.
 `via` says which was used.
 
-## Deploying the API (Cloudflare Workers, free plan)
+## Access: API keys and limits
 
-`worker/` runs the same FastAPI app as a [Python Worker](https://developers.cloudflare.com/workers/languages/python/),
-with `data/` deployed alongside it as static assets (read through the `ASSETS` binding).
-Free plan: 100,000 requests/day, no card needed, Workers Logs on.
+| Access | Limit | How |
+|---|---|---|
+| No account | 100 requests/day per caller | just call it |
+| Free account | 5,000 requests/day per key, up to 3 keys | sign in on the website with GitHub |
 
-One-time setup:
+Keys go in `Authorization: Bearer <key>` or `X-API-Key`. Every `/v1` response has
+`X-RateLimit-Limit` / `-Remaining` / `-Reset`. Only a SHA-256 hash of each key is stored;
+anonymous callers are counted by a daily-rotating salted hash of their IP, never the IP itself.
+Accounts, keys and per-day usage counts live in Cloudflare D1 (`worker/migrations/`),
+handled by `rbz_rates/access.py`.
 
-1. Create a Cloudflare account, then an API token from the "Edit Cloudflare Workers" template.
-2. Add repo secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
-3. Run the `deploy` workflow once by hand (Actions tab). The API is then live at
-   `https://rbz-rates.<your-subdomain>.workers.dev/docs`.
+## Deploying (all free plans)
 
-After that, every scrape that commits new data redeploys automatically, as does
-any push that changes `rbz_rates/api.py` or `worker/`.
+| Piece | Where | Folder |
+|---|---|---|
+| Scraper | GitHub Actions, hourly on business days | `rbz_rates/`, `.github/workflows/scrape.yml` |
+| API + keys + usage | Cloudflare Workers (Python) + D1 | `worker/` |
+| Website, sign-in, dashboard | Vercel (Next.js) | `web/` |
 
-Run the Worker locally (needs uv >= 0.13.4 and Node):
+**1. API (Cloudflare).** Create an API token (template "Edit Cloudflare Workers", plus
+**D1: Edit**), then add repo secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
+`RBZ_ADMIN_SECRET` and `RBZ_ANON_SALT` (two long random strings: `openssl rand -base64 32`).
+Run the `deploy` workflow. Its first run creates the D1 database; every run applies
+migrations, deploys, and sets the Worker's secrets. Live at
+`https://rbz-rates.<your-subdomain>.workers.dev/docs`. If the website's address isn't
+`https://rbz-rates.vercel.app`, change `SITE_URL` in `worker/wrangler.jsonc`.
+
+**2. GitHub sign-in.** Create an OAuth App at github.com/settings/developers with callback
+`https://<your-site>.vercel.app/api/auth/callback/github`.
+
+**3. Website (Vercel).** Import the repo, set **Root Directory** to `web`, and add the
+environment variables listed in `web/.env.example` (`RBZ_ADMIN_SECRET` must equal the repo
+secret of the same name). `OWNER_GITHUB_IDS` (your id: `gh api user --jq .id`) unlocks
+`/admin`, the site-wide usage page.
+
+After that, scrapes that commit new data redeploy the API, and pushes to `main` redeploy
+the website.
+
+### Running locally
 
 ```bash
-cp rbz_rates/api.py worker/src/rbz_api.py      # the Worker bundles a copy; a test checks it is current
-cd worker && uv sync && uv run pywrangler dev  # http://localhost:8787/docs
+worker/sync.sh                                        # copy the API modules into the Worker bundle
+cd worker && uv sync
+printf 'ADMIN_SECRET=dev\nANON_SALT=dev\n' > .dev.vars
+npx wrangler d1 migrations apply rbz-rates --local
+uv run pywrangler dev                                 # API on http://localhost:8787 (needs uv >= 0.13.4)
+
+cd ../web && cp .env.example .env.local               # set RBZ_API_URL=http://localhost:8787, RBZ_ADMIN_SECRET=dev,
+npm install && npm run dev                            # DEV_FAKE_USER=1:you to skip GitHub sign-in locally
 ```
 
 ## How it works
