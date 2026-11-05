@@ -154,7 +154,7 @@ export function ColumnChart({
         )}
       </div>
       <details className="text-sm">
-        <summary className="cursor-pointer text-muted-foreground hover:text-foreground">View as table</summary>
+        <summary className="cursor-pointer py-1.5 text-muted-foreground hover:text-foreground">View as table</summary>
         <div className="mt-2 max-h-72 overflow-auto rounded-md border border-border">
           <table className="w-full text-left text-xs">
             <caption className="sr-only">{title}</caption>

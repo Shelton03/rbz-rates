@@ -45,7 +45,7 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-10 sm:px-6">
       <nav className="flex flex-wrap items-center justify-between gap-3 text-sm" aria-label="Day navigation">
-        <Link href="/history" className="text-muted-foreground hover:text-foreground">← History</Link>
+        <Link href="/history" className="inline-block py-2 text-muted-foreground hover:text-foreground">← History</Link>
         <div className="flex items-center gap-2">
           {prev ? <Link href={`/history/${prev}`} className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-1.5 hover:bg-muted"><ChevronLeft className="h-4 w-4" />{formatDay(prev)}</Link> : null}
           {next ? <Link href={`/history/${next}`} className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-3 py-1.5 hover:bg-muted">{formatDay(next)}<ChevronRight className="h-4 w-4" /></Link> : null}
@@ -68,7 +68,7 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
             {verified === total ? <BadgeCheck className="h-4 w-4 text-accent" /> : <TriangleAlert className="h-4 w-4" style={{ color: "var(--status-warning)" }} />}
             {verified} of {total} rows passed the consistency check{derived ? ` (${derived} derived from the USD column)` : ""}
           </span>
-          <a href={day.source.url} className="inline-flex items-center gap-1 underline-offset-4 hover:text-foreground hover:underline"><FileText className="h-4 w-4" /> Source PDF</a>
+          <a href={day.source.url} className="inline-flex items-center gap-1 py-1.5 underline-offset-4 hover:text-foreground hover:underline"><FileText className="h-4 w-4" /> Source PDF</a>
           {day.revisions?.length ? <span>Re-published by RBZ {day.revisions.length}×</span> : null}
         </p>
         {base !== "ZWG" && (
@@ -79,15 +79,15 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
       </header>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
-        <table className="w-full min-w-[720px] text-sm">
+        <table className="w-full text-sm sm:min-w-[720px]">
           <caption className="sr-only">{base} per 1 unit of each currency on {day.date}</caption>
           <thead className="border-b border-border bg-muted/60 text-left text-xs text-muted-foreground">
             <tr>
               <th className="px-4 py-3 font-medium">Currency</th>
               <th className="px-4 py-3 text-right font-medium">Mid ({base})</th>
-              <th className="px-4 py-3 text-right font-medium">Bid</th>
-              <th className="px-4 py-3 text-right font-medium">Ask</th>
-              <th className="px-4 py-3 text-right font-medium">Per 1 USD</th>
+              <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">Bid</th>
+              <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">Ask</th>
+              <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">Per 1 USD</th>
               <th className="px-4 py-3 font-medium">Check</th>
             </tr>
           </thead>
@@ -98,14 +98,14 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
               return (
                 <tr key={code} className="border-b border-border last:border-0 hover:bg-muted/40">
                   <td className="px-4 py-2.5">
-                    <Link href={`/history?code=${code}${base === "ZWL" ? "&era=ZWL" : ""}`} className="font-mono font-medium hover:underline">{code}</Link>
+                    <Link href={`/history?code=${code}${base === "ZWL" ? "&era=ZWL" : ""}`} className="-my-1 inline-block py-1 pr-1 font-mono font-medium hover:underline">{code}</Link>
                     {r.aliases.length > 0 && <span className="ml-1 font-mono text-xs text-muted-foreground">/{r.aliases.join("/")}</span>}
-                    <span className="ml-3 text-muted-foreground">{CURRENCY_NAMES[code] ?? ""}</span>
+                    <span className="block text-xs text-muted-foreground sm:ml-3 sm:inline sm:text-sm">{CURRENCY_NAMES[code] ?? ""}</span>
                   </td>
                   <td className="tnum px-4 py-2.5 text-right font-medium">{q ? formatRate(q.mid) : "–"}</td>
-                  <td className="tnum px-4 py-2.5 text-right text-muted-foreground">{q ? formatRate(q.bid) : "–"}</td>
-                  <td className="tnum px-4 py-2.5 text-right text-muted-foreground">{q ? formatRate(q.ask) : "–"}</td>
-                  <td className="tnum px-4 py-2.5 text-right text-muted-foreground">{code === "USD" ? "1" : formatRate(1 / r.usd_per_unit.mid)}</td>
+                  <td className="tnum hidden px-4 py-2.5 text-right text-muted-foreground sm:table-cell">{q ? formatRate(q.bid) : "–"}</td>
+                  <td className="tnum hidden px-4 py-2.5 text-right text-muted-foreground sm:table-cell">{q ? formatRate(q.ask) : "–"}</td>
+                  <td className="tnum hidden px-4 py-2.5 text-right text-muted-foreground sm:table-cell">{code === "USD" ? "1" : formatRate(1 / r.usd_per_unit.mid)}</td>
                   <td className="px-4 py-2.5 text-xs text-muted-foreground">
                     {r.verified ? (r.derived_from ? "✓ derived" : "✓") : <span className="inline-flex items-center gap-1"><TriangleAlert className="h-3.5 w-3.5" style={{ color: "var(--status-warning)" }} />flagged</span>}
                   </td>

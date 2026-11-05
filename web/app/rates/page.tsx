@@ -20,12 +20,12 @@ export default async function Rates() {
             ZWG per 1 unit of each currency.
           </p>
         </div>
-        <Link href="/docs#latest" className="text-sm font-medium text-accent hover:underline">Get these as JSON →</Link>
+        <Link href="/docs#latest" className="inline-block py-1.5 text-sm font-medium text-accent hover:underline">Get these as JSON →</Link>
       </div>
       {latest && (
         <>
           <RatesTable day={latest} codes={Object.keys(latest.rates)} />
-          <a href={latest.source.url} className="inline-flex items-center gap-1 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+          <a href={latest.source.url} className="inline-flex items-center gap-1 py-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
             <FileSearch className="h-4 w-4" /> Source: RBZ PDF for {formatDay(latest.date)}
           </a>
         </>

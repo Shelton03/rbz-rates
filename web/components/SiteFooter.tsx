@@ -15,21 +15,21 @@ export function SiteFooter() {
         </div>
         <div className="space-y-2">
           <p className="font-medium">Project</p>
-          <ul className="space-y-1.5 text-muted-foreground">
-            <li><Link href="/docs" className="hover:text-foreground">Documentation</Link></li>
-            <li><a href="https://github.com/Shelton03/rbz-rates" className="hover:text-foreground">Source code</a></li>
-            <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
+          <ul className="space-y-0.5 text-muted-foreground">
+            <li><Link href="/docs" className="inline-block py-1 hover:text-foreground">Documentation</Link></li>
+            <li><a href="https://github.com/Shelton03/rbz-rates" className="inline-block py-1 hover:text-foreground">Source code</a></li>
+            <li><Link href="/privacy" className="inline-block py-1 hover:text-foreground">Privacy</Link></li>
           </ul>
         </div>
         <div className="space-y-2">
           <p className="font-medium">Source data</p>
-          <ul className="space-y-1.5 text-muted-foreground">
+          <ul className="space-y-0.5 text-muted-foreground">
             <li>
-              <a href="https://www.rbz.co.zw/index.php/research/markets/exchange-rates" className="hover:text-foreground">
+              <a href="https://www.rbz.co.zw/index.php/research/markets/exchange-rates" className="inline-block py-1 hover:text-foreground">
                 RBZ exchange rates
               </a>
             </li>
-            <li>MIT License</li>
+            <li className="py-1">MIT License</li>
           </ul>
         </div>
       </div>

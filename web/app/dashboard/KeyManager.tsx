@@ -15,7 +15,7 @@ export function CreateKey({ disabled }: { disabled: boolean }) {
         <label htmlFor="key-name" className="sr-only">Key name</label>
         <input
           id="key-name" name="name" maxLength={60} placeholder="Key name, e.g. production" disabled={disabled || pending}
-          className="h-10 flex-1 rounded-md border border-border bg-background px-3 text-sm placeholder:text-muted-foreground disabled:opacity-50"
+          className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm sm:flex-1 placeholder:text-muted-foreground disabled:opacity-50"
         />
         <button
           type="submit" disabled={disabled || pending}

@@ -52,7 +52,7 @@ export function LineChart({
   digits = 4,
   log = false,
   height = 320,
-  dayHref,
+  dayHrefPrefix,
 }: {
   points: LinePoint[];
   title: string;
@@ -60,8 +60,10 @@ export function LineChart({
   digits?: number;
   log?: boolean;
   height?: number;
-  dayHref?: (date: string) => string;
+  /** e.g. "/history/": clicking a day opens `${dayHrefPrefix}${date}` (a string, so it can come from a server component) */
+  dayHrefPrefix?: string;
 }) {
+  const dayHref = dayHrefPrefix ? (date: string) => `${dayHrefPrefix}${date}` : undefined;
   const router = useRouter();
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(720);
@@ -173,7 +175,7 @@ export function LineChart({
         </div>
       </div>
       <details className="text-sm">
-        <summary className="cursor-pointer text-muted-foreground hover:text-foreground">View as table ({points.length} days)</summary>
+        <summary className="cursor-pointer py-1.5 text-muted-foreground hover:text-foreground">View as table ({points.length} days)</summary>
         <div className="mt-2 max-h-80 overflow-auto rounded-md border border-border">
           <table className="w-full text-left text-xs">
             <caption className="sr-only">{title}</caption>

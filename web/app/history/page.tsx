@@ -89,7 +89,7 @@ export default async function History({ searchParams }: { searchParams: Promise<
               unit={unit}
               digits={end!.value >= 1000 ? 2 : 4}
               log={log}
-              dayHref={(d) => `/history/${d}`}
+              dayHrefPrefix="/history/"
             />
           </section>
         </>

@@ -25,12 +25,12 @@ export default async function Home() {
     <>
       {/* hero */}
       <section className="border-b border-border">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1.25fr_1fr] lg:py-24">
-          <div className="space-y-6">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.25fr_1fr] lg:py-24">
+          <div className="min-w-0 space-y-6">
             <p className="inline-flex flex-wrap items-center gap-2 rounded-full border border-border bg-card px-3 py-1 font-mono text-xs text-muted-foreground">
               Unofficial <span aria-hidden>·</span> Open source <span aria-hidden>·</span> Free
             </p>
-            <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+            <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-balance sm:text-5xl">
               Zimbabwe&apos;s interbank exchange rates, as an API
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground text-pretty">
@@ -50,12 +50,12 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="self-center rounded-xl border border-border bg-card p-6 shadow-sm">
+          <div className="min-w-0 self-center rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
             {latest && usd ? (
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-muted-foreground">US dollar, interbank mid</p>
-                  <p className="mt-1 text-5xl font-semibold tracking-tight">
+                  <p className="mt-1 text-4xl font-semibold tracking-tight sm:text-5xl">
                     {formatRate(usd)} <span className="text-2xl font-medium text-muted-foreground">ZWG</span>
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -66,7 +66,7 @@ export default async function Home() {
                   title="ZWG per US dollar, last 30 business days"
                   points={usdHistory.slice(-30).map((p) => ({ date: p.date, value: p.zwg_per_unit }))}
                 />
-                <a href={latest.source.url} className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+                <a href={latest.source.url} className="inline-flex items-center gap-1 py-1.5 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
                   <FileSearch className="h-3.5 w-3.5" /> Source: RBZ PDF for {formatDay(latest.date)}
                 </a>
               </div>
@@ -84,18 +84,19 @@ export default async function Home() {
             <div className="space-y-2">
               <h2 className="text-2xl font-semibold tracking-tight">Latest rates</h2>
               <p className="text-muted-foreground">
-                The last {recent.length || 3} sheets RBZ published, side by side. ZWG per 1 unit, mid rate. Each column links to its source PDF.
+                <span className="sm:hidden">The latest sheet RBZ published and the change since the day before. ZWG per 1 unit, mid rate.</span>
+                <span className="hidden sm:inline">The last {recent.length || 3} sheets RBZ published, side by side. ZWG per 1 unit, mid rate. Each column links to its source PDF.</span>
               </p>
               {latest && <DataStatus latest={latest} />}
             </div>
-            <Link href="/docs#latest" className="text-sm font-medium text-accent hover:underline">
+            <Link href="/docs#latest" className="inline-block py-1.5 text-sm font-medium text-accent hover:underline">
               Get these as JSON →
             </Link>
           </div>
           {latest && (
             <>
               <RecentRates days={recent} codes={codes.slice(0, FEATURED.length)} />
-              <Link href="/rates" className="inline-flex items-center gap-1 text-sm font-medium hover:underline">
+              <Link href="/rates" className="inline-flex items-center gap-1 py-1.5 text-sm font-medium hover:underline">
                 All {codes.length} currencies <ArrowRight className="h-4 w-4" />
               </Link>
             </>

@@ -14,7 +14,7 @@ export function RecentRates({ days, codes }: { days: Day[]; codes: string[] }) {
   const [latest, prev] = days;
   return (
     <div className="overflow-x-auto rounded-xl border border-border bg-card">
-      <table className="w-full min-w-[680px] text-sm">
+      <table className="w-full text-sm sm:min-w-[680px]">
         <caption className="sr-only">ZWG per 1 unit, mid rate, for the last {days.length} published days</caption>
         <thead className="border-b border-border bg-muted/60 text-left text-xs text-muted-foreground">
           <tr>
@@ -23,7 +23,7 @@ export function RecentRates({ days, codes }: { days: Day[]; codes: string[] }) {
               const total = Object.keys(d.rates).length;
               const ok = Object.values(d.rates).filter((r) => r.verified).length;
               return (
-                <th key={d.date} className="px-4 py-3 text-right align-top font-medium">
+                <th key={d.date} className={`px-4 py-3 text-right align-top font-medium ${i > 0 ? "hidden sm:table-cell" : ""}`}>
                   <span className={i === 0 ? "text-foreground" : ""}>{dayLabel(d.date)}</span>
                   {i === 0 && <span className="ml-1.5 rounded-full bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium text-accent">latest</span>}
                   <span className="mt-1 flex items-center justify-end gap-2 font-normal">
@@ -31,7 +31,7 @@ export function RecentRates({ days, codes }: { days: Day[]; codes: string[] }) {
                       {ok === total ? <BadgeCheck className="h-3.5 w-3.5 text-accent" /> : <TriangleAlert className="h-3.5 w-3.5" style={{ color: "var(--status-warning)" }} />}
                       {ok}/{total}
                     </span>
-                    <a href={d.source.url} className="inline-flex items-center gap-0.5 underline-offset-2 hover:text-foreground hover:underline" aria-label={`RBZ source PDF for ${d.date}`}>
+                    <a href={d.source.url} className="-my-1.5 inline-flex items-center gap-0.5 py-1.5 underline-offset-2 hover:text-foreground hover:underline" aria-label={`RBZ source PDF for ${d.date}`}>
                       <FileText className="h-3.5 w-3.5" /> PDF
                     </a>
                   </span>
@@ -55,7 +55,7 @@ export function RecentRates({ days, codes }: { days: Day[]; codes: string[] }) {
                 {days.map((d, i) => {
                   const v = d.rates[code]?.zwg_per_unit.mid;
                   return (
-                    <td key={d.date} className={`tnum px-4 py-2.5 text-right ${i === 0 ? "font-medium" : "text-muted-foreground"}`}>
+                    <td key={d.date} className={`tnum px-4 py-2.5 text-right ${i === 0 ? "font-medium" : "hidden text-muted-foreground sm:table-cell"}`}>
                       {v === undefined ? "–" : formatRate(v)}
                     </td>
                   );
