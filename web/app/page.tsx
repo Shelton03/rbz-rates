@@ -108,7 +108,7 @@ export default async function Home() {
       <section className="border-b border-border">
         <div className="mx-auto max-w-6xl space-y-8 px-4 py-16 sm:px-6">
           <div className="max-w-2xl">
-            <h2 className="text-2xl font-semibold tracking-tight">Free either way</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">Free API access</h2>
             <p className="mt-1 text-muted-foreground">Try it without an account. Sign in with GitHub when you need more.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
