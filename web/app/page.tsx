@@ -2,18 +2,20 @@ import { ArrowRight, BadgeCheck, Database, FileSearch, KeyRound, Scale, ServerCo
 import Link from "next/link";
 
 import { CommandSnippet } from "@/components/CommandSnippet";
-import { RatesTable } from "@/components/RatesTable";
+import { DataStatus } from "@/components/DataStatus";
+import { RecentRates } from "@/components/RecentRates";
 import { Sparkline } from "@/components/charts/Sparkline";
 import { FEATURED, formatDay, formatRate } from "@/lib/currencies";
-import { API_URL, getHistory, getLatest } from "@/lib/rbz";
+import { API_URL, getHistory, getRecentDays } from "@/lib/rbz";
 
-export const revalidate = 3600;
+export const revalidate = 900;
 
 const ANON_DAILY = 100;
 const KEY_DAILY = 5000;
 
 export default async function Home() {
-  const [latest, usdHistory] = await Promise.all([getLatest(), getHistory("USD", 45)]);
+  const [recent, usdHistory] = await Promise.all([getRecentDays(2), getHistory("USD", 45)]);
+  const latest = recent[0] ?? null;
   const usd = latest?.rates.USD?.zwg_per_unit.mid;
   const codes = latest
     ? [...FEATURED.filter((c) => c in latest.rates), ...Object.keys(latest.rates).filter((c) => !FEATURED.includes(c))]
@@ -79,12 +81,12 @@ export default async function Home() {
       <section id="rates" className="scroll-mt-14 border-b border-border bg-muted/40">
         <div className="mx-auto max-w-6xl space-y-6 px-4 py-16 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight">Today&apos;s rates</h2>
-              <p className="mt-1 text-muted-foreground">
-                {latest ? `Main currencies for ${formatDay(latest.date)}.` : "Unavailable right now."} ZWG per 1 unit of each
-                currency.
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold tracking-tight">Latest rates</h2>
+              <p className="text-muted-foreground">
+                The last {recent.length || 3} sheets RBZ published, side by side. ZWG per 1 unit, mid rate. Each column links to its source PDF.
               </p>
+              {latest && <DataStatus latest={latest} />}
             </div>
             <Link href="/docs#latest" className="text-sm font-medium text-accent hover:underline">
               Get these as JSON →
@@ -92,7 +94,7 @@ export default async function Home() {
           </div>
           {latest && (
             <>
-              <RatesTable day={latest} codes={codes.slice(0, FEATURED.length)} />
+              <RecentRates days={recent} codes={codes.slice(0, FEATURED.length)} />
               <Link href="/rates" className="inline-flex items-center gap-1 text-sm font-medium hover:underline">
                 All {codes.length} currencies <ArrowRight className="h-4 w-4" />
               </Link>
