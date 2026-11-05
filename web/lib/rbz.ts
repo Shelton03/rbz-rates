@@ -1,5 +1,8 @@
 import "server-only";
 
+/** Cache tag on every API read; POST /api/revalidate purges it after the API deploys new data. */
+export const DATA_TAG = "rbz-data";
+
 export const API_URL = (process.env.RBZ_API_URL || "https://rbz-rates.sheltonmutambirwa.workers.dev").replace(/\/$/, "");
 
 export type Quote = { bid: number; ask: number; mid: number };
@@ -31,7 +34,7 @@ async function get<T>(path: string): Promise<T | null> {
   try {
     const headers: Record<string, string> = {};
     if (process.env.RBZ_API_KEY) headers.Authorization = `Bearer ${process.env.RBZ_API_KEY}`;
-    const res = await fetch(`${API_URL}${path}`, { headers, next: { revalidate: 900 } });
+    const res = await fetch(`${API_URL}${path}`, { headers, next: { revalidate: 900, tags: [DATA_TAG] } });
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {

@@ -5,7 +5,8 @@ name: deploy
 # Repo secrets (Settings → Secrets and variables → Actions):
 #   CLOUDFLARE_API_TOKEN   token with Workers Scripts: Edit and D1: Edit
 #   CLOUDFLARE_ACCOUNT_ID  your Cloudflare account id
-#   RBZ_ADMIN_SECRET       shared with the website (Vercel env RBZ_ADMIN_SECRET)
+#   RBZ_ADMIN_SECRET       shared with the website (Vercel env RBZ_ADMIN_SECRET); also authorises
+#                          the website cache purge after each deploy
 #   RBZ_ANON_SALT          any long random string
 # The first run creates the D1 database; every run applies pending migrations.
 on:
@@ -73,3 +74,11 @@ jobs:
             '{} + (if $a != "" then {ADMIN_SECRET: $a} else {} end) + (if $s != "" then {ANON_SALT: $s} else {} end)' > "$f"
           if [ "$(jq length "$f")" -gt 0 ]; then npx --yes wrangler secret bulk "$f"; fi
           rm -f "$f"
+      - name: Tell the website to drop its cached data
+        if: steps.check.outputs.skip != 'true'
+        env:
+          ADMIN_SECRET: ${{ secrets.RBZ_ADMIN_SECRET }}
+          SITE_URL: https://rbz-rates.vercel.app
+        run: |
+          if [ -z "$ADMIN_SECRET" ]; then echo "::notice::RBZ_ADMIN_SECRET not set; the site refreshes within 15 minutes"; exit 0; fi
+          curl -fsS --retry 3 -X POST -H "Authorization: Bearer $ADMIN_SECRET" "$SITE_URL/api/revalidate"
