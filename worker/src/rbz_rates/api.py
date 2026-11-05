@@ -223,7 +223,8 @@ async def history(code: str, start: str = Query(..., alias="from"), end: str = Q
         series = await store.read(f"history/{canonical}.json")
         if series is None:
             raise HTTPException(404, f"Unknown currency {code}")
-    points = [{"date": p["date"], field: p["mid"]} for p in series["points"]
+    # p["zwg_per_unit"]: history files written before ZWL-era support (all ZWG)
+    points = [{"date": p["date"], field: p.get("mid", p.get("zwg_per_unit"))} for p in series["points"]
               if p.get("base", "ZWG") == base and start <= p["date"] <= end]
     return {"currency": code, "base": base, "points": points}
 

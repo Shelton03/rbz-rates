@@ -546,3 +546,18 @@ def test_gold_coin_documents_are_not_rate_sheets():
 def test_date_without_weekday_2025():
     doc = parse_text((FIX / "RATES_7_JANUARY_2025.txt").read_text())   # "07 January2025"
     assert doc.date == dt.date(2025, 1, 7) and doc.base == "ZWG"
+
+
+def test_history_reads_old_format_files(tmp_path, monkeypatch, day, pipe):
+    """A deploy can pair new API code with history files from before the base/mid format."""
+    (tmp_path / "daily").mkdir()
+    (tmp_path / "daily" / "2026-11-05.json").write_text(json.dumps(day))
+    pipe.rebuild_indexes()
+    (tmp_path / "history" / "USD.json").write_text(json.dumps(
+        {"currency": "USD", "aliases": [], "points": [{"date": "2026-11-05", "zwg_per_unit": 26.5365}]}))
+    import rbz_rates.api as api
+    monkeypatch.setattr(api, "DATA", tmp_path)
+    api._load_file.cache_clear()
+    from fastapi.testclient import TestClient
+    r = TestClient(api.app).get("/v1/history/USD", params={"from": "2026-11-01"})
+    assert r.status_code == 200 and r.json()["points"] == [{"date": "2026-11-05", "zwg_per_unit": 26.5365}]
