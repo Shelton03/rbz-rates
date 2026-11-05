@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rbz-rates",
+  "account_id": "0621797b9cca69f4b4449f2e5759e5ce",
+  "main": "src/main.py",
+  "compatibility_date": "2026-11-05",
+  "compatibility_flags": ["python_workers"],
+  // The scraper's JSON output, deployed alongside the Worker and read through env.ASSETS.
+  // run_worker_first: every request goes to the API; files are only reachable through it.
+  "assets": {
+    "directory": "../data",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  // Workers Logs (free plan): request logs + CPU time in the dashboard
+  "observability": { "enabled": true }
+}

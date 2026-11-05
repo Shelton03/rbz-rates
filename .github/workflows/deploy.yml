@@ -1,0 +1,33 @@
+name: deploy
+# Deploys the API (worker/) with the current data/ to Cloudflare Workers.
+# Runs after a scrape that committed new data, on API/worker code changes, or by hand.
+# Needs repo secrets CLOUDFLARE_API_TOKEN (template "Edit Cloudflare Workers") and CLOUDFLARE_ACCOUNT_ID.
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["rbz_rates/api.py", "worker/**"]
+concurrency: deploy
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }   # include the data commit the scrape job just pushed
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - name: Bundle the API module into the Worker
+        run: cp rbz_rates/api.py worker/src/rbz_api.py
+      - name: Deploy
+        working-directory: worker
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::notice::CLOUDFLARE_API_TOKEN secret not set; skipping deploy"
+            exit 0
+          fi
+          uv run pywrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
