@@ -1,0 +1,356 @@
+{
+  "formats": {
+    "0ab15f22": {
+      "signature": "base=ZWG;header=CURRENCY INDICES BID ASK MID RATE BID RATE ASK RATE MID RATE;columns=6x40;date=dmy;interbank_title=yes",
+      "base": "ZWG",
+      "first_seen": "2024-09-25",
+      "last_seen": "2026-11-05",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2026/November/RATES_3_NOVEMBER_2026.pdf"
+    },
+    "96f2c662": {
+      "signature": "base=ZWG;header=CURRENCY INDICES BID ASK MID RATE BID RATE ASK RATE MID RATE;columns=6x40;date=mdy;interbank_title=yes",
+      "base": "ZWG",
+      "first_seen": "2026-01-05",
+      "last_seen": "2026-11-04",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2026/October/RATES_1_OCTOBER_2026.pdf"
+    },
+    "7a0d8df0": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x39;date=mdy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2019-02-28",
+      "last_seen": "2019-07-19",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2019/Mar/Rates-14-March-2019.pdf"
+    },
+    "ad032e10": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x39;date=dmy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2019-03-15",
+      "last_seen": "2022-09-09",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2019/Mar/Rates-15-March-2019.pdf"
+    },
+    "6b78ac57": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ZWL MID RATE;columns=6x39;date=mdy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2019-04-02",
+      "last_seen": "2019-04-02",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2019/Apr/Rates-02-April-2019.pdf"
+    },
+    "28af2e6a": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x40;date=dmy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2019-06-17",
+      "last_seen": "2023-02-24",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2019/June/Rates-17-June-2019.pdf"
+    },
+    "81e2cb0d": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x40;date=mdy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2019-08-02",
+      "last_seen": "2022-04-07",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2019/Aug/Rates-02-August-2019.pdf"
+    },
+    "00cf2cd1": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x20;date=mdy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2019-11-29",
+      "last_seen": "2020-05-22",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2019/November/Rates-29-November-2019.pdf"
+    },
+    "4ca93741": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x20;date=dmy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2019-12-02",
+      "last_seen": "2020-06-19",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2019/December/Rates-2-December-2019.pdf"
+    },
+    "1134ce2a": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE MID RATE;columns=6x40;date=dmy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2020-04-15",
+      "last_seen": "2021-07-12",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2020/April/Rates-15-April-2020.pdf"
+    },
+    "a3c499a8": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x36;date=dmy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2020-10-19",
+      "last_seen": "2020-10-19",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2020/October/Rates-19-October-2020.pdf"
+    },
+    "b3929c8d": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE MID RATE;columns=6x40;date=mdy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2020-11-09",
+      "last_seen": "2020-11-09",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2020/November/Rates-09-Nov-2020.pdf"
+    },
+    "087b22eb": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID MID RATE;columns=6x40;date=dmy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2021-10-26",
+      "last_seen": "2021-10-26",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2021/October/Rates-26-October-2021.pdf"
+    },
+    "4d19e7f7": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID BID MID RATE;columns=6x40;date=dmy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2022-06-06",
+      "last_seen": "2022-06-07",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2022/June/Rates-06-June-2022--AUCTION-RATE.pdf"
+    },
+    "36d7f6b0": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x40;date=dmy;interbank_title=yes",
+      "base": "ZWL",
+      "first_seen": "2023-02-07",
+      "last_seen": "2023-05-19",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2023/March/RATES_22_MARCH_2023-INTERBANK_RATE.pdf"
+    },
+    "b20944b1": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x41;date=dmy;interbank_title=yes",
+      "base": "ZWL",
+      "first_seen": "2023-05-22",
+      "last_seen": "2024-04-05",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2023/May/RATES_22_MAY_2023-INTERBANK_RATE.pdf"
+    },
+    "7e67e78e": {
+      "signature": "base=ZWG;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x40;date=dmy;interbank_title=yes",
+      "base": "ZWG",
+      "first_seen": "2024-04-12",
+      "last_seen": "2025-01-07",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2024/June/RATES_27_JUNE_2024.pdf"
+    },
+    "d461dfac": {
+      "signature": "base=ZWG;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x38;date=dmy;interbank_title=yes",
+      "base": "ZWG",
+      "first_seen": "2024-11-11",
+      "last_seen": "2024-11-11",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2024/November/RATES_11_NOVEMBER_2024.pdf"
+    },
+    "792df22a": {
+      "signature": "base=ZWG;header=CURRENCY INDICES BID ASK MID RATE BID RATE ASK RATE MID RATE;columns=6x38;date=dmy;interbank_title=yes",
+      "base": "ZWG",
+      "first_seen": "2025-06-12",
+      "last_seen": "2025-09-18",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2025/June/RATES_12_JUNE_2025.pdf"
+    },
+    "23a3eb0b": {
+      "signature": "base=ZWL;header=CURRENCY BID ASK MID RATE BID ASK MID RATE;columns=6x39;date=mdy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2019-02-26",
+      "last_seen": "2019-02-26",
+      "example": "https://web.archive.org/web/20240705124138id_/https://www.rbz.co.zw/documents/exchange_rates/2019/feb/Rates-26-February-2019.pdf"
+    },
+    "44b26f5c": {
+      "signature": "base=ZWL;header=CURRENCY BID ASK MID RATE BID ASK MID RATE;columns=6x38;date=mdy;interbank_title=no",
+      "base": "ZWL",
+      "first_seen": "2019-02-27",
+      "last_seen": "2019-02-27",
+      "example": "https://web.archive.org/web/20240705124144id_/https://www.rbz.co.zw/documents/exchange_rates/2019/feb/Rates-27-February-2019.pdf"
+    },
+    "bdcf844a": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x19;date=dmy;interbank_title=yes",
+      "base": "ZWL",
+      "first_seen": "2023-03-09",
+      "last_seen": "2023-03-09",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2023/March/RATES_09_MARCH_2023-INTERBANK_RATE.pdf"
+    },
+    "e107eaf7": {
+      "signature": "base=ZWL;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x43;date=dmy;interbank_title=yes",
+      "base": "ZWL",
+      "first_seen": "2024-01-25",
+      "last_seen": "2024-02-02",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2024/January/RATES_25_JANUARY_2024-INTERBANK_RATE.pdf"
+    },
+    "c3caf743": {
+      "signature": "base=ZWG;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x40;date=dmy;interbank_title=no",
+      "base": "ZWG",
+      "first_seen": "2024-04-08",
+      "last_seen": "2024-04-26",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2024/April/RATES_8_APRIL_2024.pdf"
+    },
+    "bba35333": {
+      "signature": "base=None;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x40;date=mdy;interbank_title=no",
+      "base": null,
+      "first_seen": "2019-08-08",
+      "last_seen": "2019-08-19",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2019/Aug/RATES-08-AUGUST-2019.pdf"
+    },
+    "cfd27d10": {
+      "signature": "base=None;header=CURRENCY INDICES BID ASK MID RATE BID ASK MID RATE;columns=6x20;date=mdy;interbank_title=no",
+      "base": null,
+      "first_seen": "2019-08-15",
+      "last_seen": "2019-08-15",
+      "example": "https://www.rbz.co.zw/documents/Exchange_Rates/2019/Aug/Rates-15-August-2019.pdf"
+    }
+  },
+  "currencies": {
+    "USD": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "ZAR": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "GBP": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "JPY": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "ZMW": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "BWP": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "CHF": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "MWK": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "AUD": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "SDR": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "MZN": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "NOK": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "SEK": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "CAD": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "EUR": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "CNY": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "INR": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "NZD": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "DKK": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "XAU": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "AFN": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "THB": {
+      "first_seen": "2019-06-17",
+      "last_seen": "2026-11-05"
+    },
+    "ETB": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "SZL": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "MUR": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "MYR": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "LSL": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "CYP": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "EGP": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "BRL": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "TZS": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "RUB": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "KES": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "DEM": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "ESP": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "ITL": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "FRF": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "HKD": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "ARS": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "XAF": {
+      "first_seen": "2019-02-26",
+      "last_seen": "2026-11-05"
+    },
+    "GBC": {
+      "first_seen": "2023-05-22",
+      "last_seen": "2023-06-23"
+    },
+    "ZIG": {
+      "first_seen": "2023-06-26",
+      "last_seen": "2024-04-05"
+    }
+  }
+}

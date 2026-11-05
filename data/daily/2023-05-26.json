@@ -1,0 +1,1222 @@
+{
+  "date": "2023-05-26",
+  "base": "ZWL",
+  "parser": "rbz-interbank-adaptive-v1",
+  "rates": {
+    "USD": {
+      "zwl_per_unit": {
+        "bid": 1900.3725,
+        "ask": 1963.0884,
+        "mid": 1931.7079
+      },
+      "usd_per_unit": {
+        "bid": 1.0,
+        "ask": 1.0,
+        "mid": 1.0
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 1.0,
+          "ask": 1.0,
+          "mid": 1.0
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 1900.3725,
+          "ask": 1963.0884,
+          "mid": 1931.7079
+        },
+        "zwl_orientation": "zwl_per_unit"
+      }
+    },
+    "ZAR": {
+      "zwl_per_unit": {
+        "bid": 97.0873786408,
+        "ask": 100.0,
+        "mid": 98.5221674877
+      },
+      "usd_per_unit": {
+        "bid": 0.0506277845,
+        "ask": 0.0506482982,
+        "mid": 0.0506380393
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 19.744,
+          "ask": 19.752,
+          "mid": 19.748
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.01,
+          "ask": 0.0103,
+          "mid": 0.01015
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "GBP": {
+      "zwl_per_unit": {
+        "bid": 2344.4895,
+        "ask": 2422.0584,
+        "mid": 2383.27395
+      },
+      "usd_per_unit": {
+        "bid": 1.2337,
+        "ask": 1.2338,
+        "mid": 1.23375
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": true,
+        "index": {
+          "bid": 1.2337,
+          "ask": 1.2338,
+          "mid": 1.23375
+        },
+        "index_orientation": "usd_per_unit",
+        "zwl": {
+          "bid": 2344.4895,
+          "ask": 2422.0584,
+          "mid": 2383.27395
+        },
+        "zwl_orientation": "zwl_per_unit"
+      }
+    },
+    "JPY": {
+      "zwl_per_unit": {
+        "bid": 13.6054421769,
+        "ask": 14.064697609,
+        "mid": 13.8312586445
+      },
+      "usd_per_unit": {
+        "bid": 0.0071561471,
+        "ask": 0.0071576838,
+        "mid": 0.0071569154
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 139.71,
+          "ask": 139.74,
+          "mid": 139.725
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0711,
+          "ask": 0.0735,
+          "mid": 0.0723
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "ZMW": {
+      "zwl_per_unit": {
+        "bid": 97.0873786408,
+        "ask": 103.0927835052,
+        "mid": 100.0
+      },
+      "usd_per_unit": {
+        "bid": 0.0506457331,
+        "ask": 0.0520156047,
+        "mid": 0.0513215294
+      },
+      "aliases": [
+        "ZMK"
+      ],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 19.225,
+          "ask": 19.745,
+          "mid": 19.485
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0097,
+          "ask": 0.0103,
+          "mid": 0.01
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "BWP": {
+      "zwl_per_unit": {
+        "bid": 138.7271,
+        "ask": 143.8943,
+        "mid": 141.3107
+      },
+      "usd_per_unit": {
+        "bid": 0.073,
+        "ask": 0.0733,
+        "mid": 0.07315
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 0.073,
+          "ask": 0.0733,
+          "mid": 0.07315
+        },
+        "index_orientation": "usd_per_unit",
+        "zwl": {
+          "bid": 138.7271,
+          "ask": 143.8943,
+          "mid": 141.3107
+        },
+        "zwl_orientation": "zwl_per_unit"
+      }
+    },
+    "CHF": {
+      "zwl_per_unit": {
+        "bid": 1718.6968,
+        "ask": 1775.6134,
+        "mid": 1747.1551
+      },
+      "usd_per_unit": {
+        "bid": 0.9044,
+        "ask": 0.9045,
+        "mid": 0.90445
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 0.9044,
+          "ask": 0.9045,
+          "mid": 0.90445
+        },
+        "index_orientation": "usd_per_unit",
+        "zwl": {
+          "bid": 1718.6968,
+          "ask": 1775.6134,
+          "mid": 1747.1551
+        },
+        "zwl_orientation": "zwl_per_unit"
+      }
+    },
+    "MWK": {
+      "zwl_per_unit": {
+        "bid": 1.8443378827,
+        "ask": 1.9334880124,
+        "mid": 1.8878610534
+      },
+      "usd_per_unit": {
+        "bid": 0.0009704027,
+        "ask": 0.0009847366,
+        "mid": 0.0009775171
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 1015.5,
+          "ask": 1030.5,
+          "mid": 1023.0
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.5172,
+          "ask": 0.5422,
+          "mid": 0.5297
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "AUD": {
+      "zwl_per_unit": {
+        "bid": 1238.0926,
+        "ask": 1279.1484,
+        "mid": 1258.6205
+      },
+      "usd_per_unit": {
+        "bid": 0.6515,
+        "ask": 0.6516,
+        "mid": 0.65155
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": true,
+        "index": {
+          "bid": 0.6515,
+          "ask": 0.6516,
+          "mid": 0.65155
+        },
+        "index_orientation": "usd_per_unit",
+        "zwl": {
+          "bid": 1238.0926,
+          "ask": 1279.1484,
+          "mid": 1258.6205
+        },
+        "zwl_orientation": "zwl_per_unit"
+      }
+    },
+    "SDR": {
+      "zwl_per_unit": {
+        "bid": 2569.9828,
+        "ask": 2569.9828,
+        "mid": 2569.9828
+      },
+      "usd_per_unit": {
+        "bid": 1.33042,
+        "ask": 1.33042,
+        "mid": 1.33042
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": true,
+        "index": {
+          "bid": 1.33042,
+          "ask": 1.33042,
+          "mid": 1.33042
+        },
+        "index_orientation": "usd_per_unit",
+        "zwl": {
+          "bid": 2569.9828,
+          "ask": 2569.9828,
+          "mid": 2569.9828
+        },
+        "zwl_orientation": "zwl_per_unit"
+      }
+    },
+    "MZN": {
+      "zwl_per_unit": {
+        "bid": 29.2397660819,
+        "ask": 31.0559006211,
+        "mid": 30.1204819277
+      },
+      "usd_per_unit": {
+        "bid": 0.0153846154,
+        "ask": 0.0158127767,
+        "mid": 0.015595758
+      },
+      "aliases": [
+        "MET"
+      ],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 63.24,
+          "ask": 65.0,
+          "mid": 64.12
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0322,
+          "ask": 0.0342,
+          "mid": 0.0332
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "NOK": {
+      "zwl_per_unit": {
+        "bid": 172.4137931034,
+        "ask": 178.5714285714,
+        "mid": 175.4385964912
+      },
+      "usd_per_unit": {
+        "bid": 0.0905354265,
+        "ask": 0.0905961225,
+        "mid": 0.0905657643
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 11.038,
+          "ask": 11.0454,
+          "mid": 11.0417
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0056,
+          "ask": 0.0058,
+          "mid": 0.0057
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "SEK": {
+      "zwl_per_unit": {
+        "bid": 175.9359811137,
+        "ask": 181.8280537957,
+        "mid": 178.8792336292
+      },
+      "usd_per_unit": {
+        "bid": 0.0925797343,
+        "ask": 0.0926234671,
+        "mid": 0.0926015955
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 10.7964,
+          "ask": 10.8015,
+          "mid": 10.79895
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0054,
+          "ask": 0.0056,
+          "mid": 0.0055
+        },
+        "zwl_orientation": "units_per_zwl"
+      },
+      "derived_from": "usd"
+    },
+    "CAD": {
+      "zwl_per_unit": {
+        "bid": 1393.643663831,
+        "ask": 1439.7421342134,
+        "mid": 1416.675516116
+      },
+      "usd_per_unit": {
+        "bid": 0.7333528894,
+        "ask": 0.733406674,
+        "mid": 0.7333797807
+      },
+      "aliases": [],
+      "verified": false,
+      "as_published": {
+        "starred": true,
+        "index": {
+          "bid": 1.3635,
+          "ask": 1.3636,
+          "mid": 1.36355
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0006,
+          "ask": 0.0007,
+          "mid": 0.00065
+        },
+        "zwl_orientation": "units_per_zwl"
+      },
+      "derived_from": "usd"
+    },
+    "EUR": {
+      "zwl_per_unit": {
+        "bid": 2040.6199,
+        "ask": 2108.7495,
+        "mid": 2074.6847
+      },
+      "usd_per_unit": {
+        "bid": 1.0738,
+        "ask": 1.0742,
+        "mid": 1.074
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": true,
+        "index": {
+          "bid": 1.0738,
+          "ask": 1.0742,
+          "mid": 1.074
+        },
+        "index_orientation": "usd_per_unit",
+        "zwl": {
+          "bid": 2040.6199,
+          "ask": 2108.7495,
+          "mid": 2074.6847
+        },
+        "zwl_orientation": "zwl_per_unit"
+      }
+    },
+    "CNY": {
+      "zwl_per_unit": {
+        "bid": 269.2546649853,
+        "ask": 278.1918204234,
+        "mid": 273.7196358355
+      },
+      "usd_per_unit": {
+        "bid": 0.1416852038,
+        "ask": 0.1417113057,
+        "mid": 0.1416982536
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 7.0566,
+          "ask": 7.0579,
+          "mid": 7.05725
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0035,
+          "ask": 0.0037,
+          "mid": 0.0036
+        },
+        "zwl_orientation": "units_per_zwl"
+      },
+      "derived_from": "usd"
+    },
+    "INR": {
+      "zwl_per_unit": {
+        "bid": 22.9885057471,
+        "ask": 23.7529691211,
+        "mid": 23.3644859813
+      },
+      "usd_per_unit": {
+        "bid": 0.0120882442,
+        "ask": 0.0120897056,
+        "mid": 0.0120889749
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 82.715,
+          "ask": 82.725,
+          "mid": 82.72
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0421,
+          "ask": 0.0435,
+          "mid": 0.0428
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "NZD": {
+      "zwl_per_unit": {
+        "bid": 1153.5261,
+        "ask": 1191.7909,
+        "mid": 1172.6585
+      },
+      "usd_per_unit": {
+        "bid": 0.607,
+        "ask": 0.6071,
+        "mid": 0.60705
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": true,
+        "index": {
+          "bid": 0.607,
+          "ask": 0.6071,
+          "mid": 0.60705
+        },
+        "index_orientation": "usd_per_unit",
+        "zwl": {
+          "bid": 1153.5261,
+          "ask": 1191.7909,
+          "mid": 1172.6585
+        },
+        "zwl_orientation": "zwl_per_unit"
+      }
+    },
+    "DKK": {
+      "zwl_per_unit": {
+        "bid": 273.9749578305,
+        "ask": 283.0574596629,
+        "mid": 278.512630122
+      },
+      "usd_per_unit": {
+        "bid": 0.1441690815,
+        "ask": 0.1441898692,
+        "mid": 0.1441794746
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 6.9353,
+          "ask": 6.9363,
+          "mid": 6.9358
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0035,
+          "ask": 0.0036,
+          "mid": 0.00355
+        },
+        "zwl_orientation": "units_per_zwl"
+      },
+      "derived_from": "usd"
+    },
+    "XAU": {
+      "zwl_per_unit": {
+        "bid": 3824861.8076,
+        "ask": 3825470.365,
+        "mid": 3825166.0863
+      },
+      "usd_per_unit": {
+        "bid": 1948.39,
+        "ask": 1948.7,
+        "mid": 1948.545
+      },
+      "aliases": [],
+      "verified": false,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 1948.39,
+          "ask": 1948.7,
+          "mid": 1948.545
+        },
+        "index_orientation": "usd_per_unit",
+        "zwl": {
+          "bid": 3824861.8076,
+          "ask": 3825470.365,
+          "mid": 3825166.0863
+        },
+        "zwl_orientation": "zwl_per_unit"
+      }
+    },
+    "AFN": {
+      "zwl_per_unit": {
+        "bid": 21.6919739696,
+        "ask": 22.4719101124,
+        "mid": 22.0750551876
+      },
+      "usd_per_unit": {
+        "bid": 0.0114038089,
+        "ask": 0.0114298777,
+        "mid": 0.0114168284
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 87.49,
+          "ask": 87.69,
+          "mid": 87.59
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0445,
+          "ask": 0.0461,
+          "mid": 0.0453
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "THB": {
+      "zwl_per_unit": {
+        "bid": 54.9450549451,
+        "ask": 56.8181818182,
+        "mid": 55.8659217877
+      },
+      "usd_per_unit": {
+        "bid": 0.0288517023,
+        "ask": 0.0288933834,
+        "mid": 0.0288725278
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 34.61,
+          "ask": 34.66,
+          "mid": 34.635
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0176,
+          "ask": 0.0182,
+          "mid": 0.0179
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "ETB": {
+      "zwl_per_unit": {
+        "bid": 34.7222222222,
+        "ask": 36.231884058,
+        "mid": 35.4609929078
+      },
+      "usd_per_unit": {
+        "bid": 0.0182140405,
+        "ask": 0.018422924,
+        "mid": 0.0183178868
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 54.2802,
+          "ask": 54.9027,
+          "mid": 54.59145
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0276,
+          "ask": 0.0288,
+          "mid": 0.0282
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "SZL": {
+      "zwl_per_unit": {
+        "bid": 97.0873786408,
+        "ask": 100.0,
+        "mid": 98.5221674877
+      },
+      "usd_per_unit": {
+        "bid": 0.0506277845,
+        "ask": 0.0506457331,
+        "mid": 0.0506367572
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 19.745,
+          "ask": 19.752,
+          "mid": 19.7485
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.01,
+          "ask": 0.0103,
+          "mid": 0.01015
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "MUR": {
+      "zwl_per_unit": {
+        "bid": 41.4937759336,
+        "ask": 43.29004329,
+        "mid": 42.3728813559
+      },
+      "usd_per_unit": {
+        "bid": 0.0218340611,
+        "ask": 0.021978022,
+        "mid": 0.021905805
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 45.5,
+          "ask": 45.8,
+          "mid": 45.65
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0231,
+          "ask": 0.0241,
+          "mid": 0.0236
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "MYR": {
+      "zwl_per_unit": {
+        "bid": 410.1818476149,
+        "ask": 424.5433391003,
+        "mid": 417.3507399806
+      },
+      "usd_per_unit": {
+        "bid": 0.2158428664,
+        "ask": 0.2162629758,
+        "mid": 0.2160527169
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 4.624,
+          "ask": 4.633,
+          "mid": 4.6285
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0023,
+          "ask": 0.0024,
+          "mid": 0.00235
+        },
+        "zwl_orientation": "units_per_zwl"
+      },
+      "derived_from": "usd"
+    },
+    "LSL": {
+      "zwl_per_unit": {
+        "bid": 97.0873786408,
+        "ask": 100.0,
+        "mid": 98.5221674877
+      },
+      "usd_per_unit": {
+        "bid": 0.0506295788,
+        "ask": 0.0507001693,
+        "mid": 0.0506648495
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 19.7238,
+          "ask": 19.7513,
+          "mid": 19.73755
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.01,
+          "ask": 0.0103,
+          "mid": 0.01015
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "CYP": {
+      "zwl_per_unit": {
+        "bid": 4774.8052763819,
+        "ask": 4938.5871698113,
+        "mid": 4856.5880578253
+      },
+      "usd_per_unit": {
+        "bid": 2.5125628141,
+        "ask": 2.5157232704,
+        "mid": 2.514142049
+      },
+      "aliases": [],
+      "verified": false,
+      "as_published": {
+        "starred": true,
+        "index": {
+          "bid": 0.3975,
+          "ask": 0.398,
+          "mid": 0.39775
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0002,
+          "ask": 0.0002,
+          "mid": 0.0002
+        },
+        "zwl_orientation": "units_per_zwl"
+      },
+      "derived_from": "usd"
+    },
+    "EGP": {
+      "zwl_per_unit": {
+        "bid": 61.7283950617,
+        "ask": 63.6942675159,
+        "mid": 62.6959247649
+      },
+      "usd_per_unit": {
+        "bid": 0.0323101777,
+        "ask": 0.0324149109,
+        "mid": 0.0323624595
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 30.85,
+          "ask": 30.95,
+          "mid": 30.9
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0157,
+          "ask": 0.0162,
+          "mid": 0.01595
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "BRL": {
+      "zwl_per_unit": {
+        "bid": 377.2975897395,
+        "ask": 389.7955601446,
+        "mid": 383.5417254045
+      },
+      "usd_per_unit": {
+        "bid": 0.1985387548,
+        "ask": 0.1985624082,
+        "mid": 0.1985505808
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 5.0362,
+          "ask": 5.0368,
+          "mid": 5.0365
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0025,
+          "ask": 0.0026,
+          "mid": 0.00255
+        },
+        "zwl_orientation": "units_per_zwl"
+      },
+      "derived_from": "usd"
+    },
+    "TZS": {
+      "zwl_per_unit": {
+        "bid": 0.8022462896,
+        "ask": 0.8322237017,
+        "mid": 0.8169600915
+      },
+      "usd_per_unit": {
+        "bid": 0.000422119,
+        "ask": 0.0004239084,
+        "mid": 0.0004230118
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 2359.0,
+          "ask": 2369.0,
+          "mid": 2364.0
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 1.2016,
+          "ask": 1.2465,
+          "mid": 1.22405
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "RUB": {
+      "zwl_per_unit": {
+        "bid": 23.7529691211,
+        "ask": 24.57002457,
+        "mid": 24.154589372
+      },
+      "usd_per_unit": {
+        "bid": 0.0124968758,
+        "ask": 0.0125,
+        "mid": 0.0124984377
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 80.0,
+          "ask": 80.02,
+          "mid": 80.01
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0407,
+          "ask": 0.0421,
+          "mid": 0.0414
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "KES": {
+      "zwl_per_unit": {
+        "bid": 13.7362637363,
+        "ask": 14.2247510669,
+        "mid": 13.9762403913
+      },
+      "usd_per_unit": {
+        "bid": 0.0072254335,
+        "ask": 0.00723589,
+        "mid": 0.007230658
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 138.2,
+          "ask": 138.4,
+          "mid": 138.3
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0703,
+          "ask": 0.0728,
+          "mid": 0.07155
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "DEM": {
+      "zwl_per_unit": {
+        "bid": 856.9887260428,
+        "ask": 886.2701580135,
+        "mid": 871.6110095883
+      },
+      "usd_per_unit": {
+        "bid": 0.4509582864,
+        "ask": 0.4514672686,
+        "mid": 0.451212634
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 2.215,
+          "ask": 2.2175,
+          "mid": 2.21625
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0011,
+          "ask": 0.0011,
+          "mid": 0.0011
+        },
+        "zwl_orientation": "units_per_zwl"
+      },
+      "derived_from": "usd"
+    },
+    "ESP": {
+      "zwl_per_unit": {
+        "bid": 10.0806451613,
+        "ask": 10.4275286757,
+        "mid": 10.2511532547
+      },
+      "usd_per_unit": {
+        "bid": 0.0053008216,
+        "ask": 0.0053070106,
+        "mid": 0.0053039143
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 188.43,
+          "ask": 188.65,
+          "mid": 188.54
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0959,
+          "ask": 0.0992,
+          "mid": 0.09755
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "ITL": {
+      "zwl_per_unit": {
+        "bid": 0.8656509695,
+        "ask": 0.8952551477,
+        "mid": 0.8802042074
+      },
+      "usd_per_unit": {
+        "bid": 0.0004555145,
+        "ask": 0.0004560317,
+        "mid": 0.0004557729
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 2192.83,
+          "ask": 2195.32,
+          "mid": 2194.075
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 1.117,
+          "ask": 1.1552,
+          "mid": 1.1361
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "FRF": {
+      "zwl_per_unit": {
+        "bid": 255.5225757005,
+        "ask": 264.2573263155,
+        "mid": 259.8844200486
+      },
+      "usd_per_unit": {
+        "bid": 0.1344592051,
+        "ask": 0.1346130548,
+        "mid": 0.1345360859
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 7.4287,
+          "ask": 7.4372,
+          "mid": 7.43295
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0037,
+          "ask": 0.0039,
+          "mid": 0.0038
+        },
+        "zwl_orientation": "units_per_zwl"
+      },
+      "derived_from": "usd"
+    },
+    "HKD": {
+      "zwl_per_unit": {
+        "bid": 243.9024390244,
+        "ask": 256.4102564103,
+        "mid": 250.0
+      },
+      "usd_per_unit": {
+        "bid": 0.127645452,
+        "ask": 0.1290405833,
+        "mid": 0.1283392262
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 7.7495,
+          "ask": 7.8342,
+          "mid": 7.79185
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0039,
+          "ask": 0.0041,
+          "mid": 0.004
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "ARS": {
+      "zwl_per_unit": {
+        "bid": 8.064516129,
+        "ask": 8.3333333333,
+        "mid": 8.1967213115
+      },
+      "usd_per_unit": {
+        "bid": 0.0042419615,
+        "ask": 0.0042423214,
+        "mid": 0.0042421414
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 235.72,
+          "ask": 235.74,
+          "mid": 235.73
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.12,
+          "ask": 0.124,
+          "mid": 0.122
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "XAF": {
+      "zwl_per_unit": {
+        "bid": 3.0413625304,
+        "ask": 3.2154340836,
+        "mid": 3.1259768678
+      },
+      "usd_per_unit": {
+        "bid": 0.0016001024,
+        "ask": 0.0016375993,
+        "mid": 0.0016186337
+      },
+      "aliases": [],
+      "verified": true,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 610.65,
+          "ask": 624.96,
+          "mid": 617.805
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.311,
+          "ask": 0.3288,
+          "mid": 0.3199
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    },
+    "GBC": {
+      "zwl_per_unit": {
+        "bid": 151.5151515152,
+        "ask": 151.5151515152,
+        "mid": 151.5151515152
+      },
+      "usd_per_unit": {
+        "bid": 1.0,
+        "ask": 1.0,
+        "mid": 1.0
+      },
+      "aliases": [],
+      "verified": false,
+      "as_published": {
+        "starred": false,
+        "index": {
+          "bid": 1.0,
+          "ask": 1.0,
+          "mid": 1.0
+        },
+        "index_orientation": "units_per_usd",
+        "zwl": {
+          "bid": 0.0066,
+          "ask": 0.0066,
+          "mid": 0.0066
+        },
+        "zwl_orientation": "units_per_zwl"
+      }
+    }
+  },
+  "warnings": [
+    "CAD: printed too coarsely to confirm (0.00065); rate derived from the USD column",
+    "XAU: published figures are not internally consistent (best fit error 1.60%); values kept as published",
+    "CYP: printed too coarsely to confirm (0.0002); rate derived from the USD column",
+    "GBC: published figures are not internally consistent (best fit error 92.16%); values kept as published"
+  ],
+  "source": {
+    "url": "https://www.rbz.co.zw/documents/Exchange_Rates/2023/May/RATES_26_MAY_2023-INTERBANK_RATE.pdf",
+    "retrieved_at": "2026-11-05T21:16:39+00:00",
+    "sha256": "14424e721559656c3db953444747332e9d3806983f10f692308eb18e1931789a",
+    "etag": "\"e856-63ccb76c2dd52\"",
+    "last_modified": "Wed, 20 Aug 2025 12:53:48 GMT"
+  }
+}

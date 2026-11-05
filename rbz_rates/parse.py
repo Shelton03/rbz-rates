@@ -38,6 +38,7 @@ MONTHS = {m[:3].lower(): i for i, m in enumerate(
     ["January", "February", "March", "April", "May", "June", "July",
      "August", "September", "October", "November", "December"], start=1)}
 # local-currency labels seen in the header, normalised
+ZIG_LAUNCH = dt.date(2024, 4, 5)  # first ZWG sheet
 BASE_LABELS = {"ZWG": "ZWG", "ZIG": "ZWG", "ZWL": "ZWL", "RTGS$": "RTGS", "RTGS": "RTGS"}  # "ZIG": early ZiG sheets
 
 
@@ -182,14 +183,20 @@ def parse_text(text: str) -> ParsedDocument:
         raise ShapeError("No column header (CURRENCY … BID … ASK) found", layout)
     if layout.base is None and layout.columns.get(3, 0) >= 10 and not layout.columns.get(COLUMNS):
         raise NoLocalRates("USD cross rates only: the sheet has no local-currency columns", layout)
-    if layout.base is None:
+    date, _ = _parse_date(text)
+    inferred = None
+    if layout.base is None and date is not None and date < ZIG_LAUNCH and layout.columns.get(COLUMNS, 0) >= 10:
+        # a few 2019 sheets dropped the currency label line; everything before the ZiG was priced in ZWL
+        inferred = "ZWL"
+    elif layout.base is None:
         raise ShapeError("Couldn't tell which local currency the sheet is in (no ZWG/ZWL/RTGS$ label)", layout)
     if layout.columns.get(COLUMNS, 0) < 10:
         raise ShapeError(f"Rows don't have the expected {COLUMNS} numbers (found {layout.columns}); "
                          "the column layout has changed", layout)
 
-    date, _ = _parse_date(text)
-    doc = ParsedDocument(parser="rbz-interbank-adaptive-v1", base=layout.base, date=date, layout=layout)
+    doc = ParsedDocument(parser="rbz-interbank-adaptive-v1", base=layout.base or inferred, date=date, layout=layout)
+    if inferred:
+        doc.warnings.append(f"The sheet has no currency label; {inferred} inferred from its date")
     for line in text.splitlines():
         r = _row_numbers(line)
         if not r:

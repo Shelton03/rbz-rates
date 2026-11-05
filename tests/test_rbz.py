@@ -561,3 +561,11 @@ def test_history_reads_old_format_files(tmp_path, monkeypatch, day, pipe):
     from fastapi.testclient import TestClient
     r = TestClient(api.app).get("/v1/history/USD", params={"from": "2026-11-01"})
     assert r.status_code == 200 and r.json()["points"] == [{"date": "2026-11-05", "zwg_per_unit": 26.5365}]
+
+
+def test_missing_currency_label_inferred_only_before_zig():
+    unlabelled = OLD["RATES_1_APRIL_2019.txt"].replace("ZWL ZWL\n", "", 1)
+    doc = parse_text(unlabelled)
+    assert doc.base == "ZWL" and any("inferred from its date" in w for w in doc.warnings)
+    with pytest.raises(ShapeError, match="local currency"):                 # after the ZiG: refused
+        parse_text(TEXT.replace("ZWG ZWG ZWG\n", "", 1))
