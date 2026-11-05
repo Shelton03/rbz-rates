@@ -64,3 +64,53 @@ def guess_pdf_url(day: dt.date) -> str:
     month = MONTHS[day.month - 1]
     return (f"{BASE}/documents/Exchange_Rates/{day.year}/{month.capitalize()}/"
             f"RATES_{day.day}_{month.upper()}_{day.year}.pdf")
+
+
+# ---------------------------------------------------------------- older sheets
+
+ARCHIVE_CDX = "https://web.archive.org/cdx/search/cdx"
+# filenames RBZ has used: Rates-01-April-2021.pdf, 5-April-2019.pdf, Rates-1-April-2022.pdf,
+# RATES_03_APRIL_2023-INTERBANK_RATE.pdf, RATES_10_APRIL_2024.pdf, RATES_5_NOVEMBER_2026.pdf
+NOT_RATES_RE = re.compile(r"gold|coin|token|bond|tbill|treasury", re.I)
+FILE_DATE_RE = re.compile(r"(?P<day>\d{1,2})[-_ ](?P<month>[A-Za-z]{3,9})[-_ ]?(?P<year>\d{4})")
+
+
+def date_from_url(url: str) -> dt.date | None:
+    """The sheet's date from its filename, whichever naming style RBZ used that year."""
+    m = FILE_DATE_RE.search(url.rsplit("/", 1)[-1])
+    if not m:
+        return None
+    month = next((i + 1 for i, name in enumerate(MONTHS) if name.startswith(m["month"].lower()[:3])), None)
+    try:
+        return dt.date(int(m["year"]), month, int(m["day"])) if month else None
+    except ValueError:
+        return None
+
+
+def archived_pdf_urls(fetcher, year: int) -> dict[dt.date, tuple[str, str]]:
+    """{date: (rbz.co.zw url, Internet Archive copy)} for one year, from the archive's index.
+
+    RBZ's listing pages are behind bot protection and older filenames don't follow
+    one pattern, so the archive's record of which PDFs existed is the reliable list.
+    The PDF is fetched from rbz.co.zw; the archive's stored copy of the same file is
+    the fallback when RBZ no longer serves that path (some 2019 links were recorded
+    in lower case and RBZ's server is now case-sensitive).
+    """
+    query = (f"{ARCHIVE_CDX}?url=rbz.co.zw/documents/Exchange_Rates/{year}/&matchType=prefix"
+             "&filter=mimetype:application/pdf&filter=statuscode:200&collapse=urlkey&fl=timestamp,original")
+    text = fetcher.text(query)
+    lines = [ln.split(" ", 1) for ln in text.splitlines() if ln.strip()]
+    if lines and (len(lines[0]) != 2 or not lines[0][1].startswith("http")):
+        raise ValueError("Internet Archive index unavailable: " + " ".join(text[:120].split()))
+    out: dict[dt.date, tuple[str, str]] = {}
+    # other documents share the folder (e.g. the Mosi-oa-Tunya gold coin price list); prefer "rate" files
+    ranked = sorted(lines, key=lambda x: ("rate" not in x[1].rsplit("/", 1)[-1].lower(), x[1]))
+    for stamp, original in ranked:
+        name = original.rsplit("/", 1)[-1]
+        if NOT_RATES_RE.search(name):
+            continue
+        day = date_from_url(original)
+        if day and day.year == year:
+            rbz = "https://www.rbz.co.zw" + original[original.index("/documents/"):]
+            out.setdefault(day, (rbz, f"https://web.archive.org/web/{stamp}id_/{original}"))
+    return out

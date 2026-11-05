@@ -116,11 +116,21 @@ def _check_date(value: str, name: str) -> None:
         raise HTTPException(400, f"{name} must be YYYY-MM-DD")
 
 
+LOCAL_CURRENCIES = ("ZWG", "ZWL", "RTGS")  # what RBZ has priced in: ZWG since 5 Apr 2024, ZWL/RTGS$ before
+
+
+def _base(day: dict) -> str:
+    return day.get("base", "ZWG")
+
+
 def _entry(day: dict, code: str) -> tuple[str, dict | None]:
-    """(canonical code, rate entry); entry is None for ZWG itself."""
+    """(canonical code, rate entry); entry is None for the day's local currency itself."""
     code = code.upper()
-    if code == "ZWG":
+    base = _base(day)
+    if code == base:
         return code, None
+    if code in LOCAL_CURRENCIES:
+        raise HTTPException(404, f"{code} isn't on the RBZ sheet for {day['date']}: rates that day are in {base}")
     for c, r in day["rates"].items():
         if c == code or code in r["aliases"]:
             return c, r
@@ -128,34 +138,42 @@ def _entry(day: dict, code: str) -> tuple[str, dict | None]:
 
 
 def _per_unit(r: dict, column: str) -> tuple[float, float]:
-    """USD or ZWG per 1 unit as a fraction (num, den) of the printed mid.
+    """USD or local currency per 1 unit as a fraction (num, den) of the printed mid.
 
+    column is "USD" or the day's local currency in lower case ("zwg", "zwl").
     Kept as a fraction so a figure RBZ prints as "units per USD/ZWG" is used
     exactly as printed rather than round-tripped through a stored reciprocal.
+    Rows RBZ printed too coarsely carry a rate derived from the USD column; that's used instead.
     """
     pub = r["as_published"]
-    value, orientation = (pub["index"]["mid"], pub["index_orientation"]) if column == "USD" \
-        else (pub["zwg"]["mid"], pub["zwg_orientation"])
+    if column == "USD":
+        value, orientation = pub["index"]["mid"], pub["index_orientation"]
+    elif "derived_from" in r:
+        return r[f"{column}_per_unit"]["mid"], 1.0
+    else:
+        value, orientation = pub[column]["mid"], pub[f"{column}_orientation"]
     return (value, 1.0) if orientation.endswith("_per_unit") else (1.0, value)
 
 
 def _pair_rate(day: dict, frm: str, to: str) -> tuple[float, str]:
     """Units of `to` per 1 unit of `frm`, using RBZ's published figure for the pair.
 
-    X/USD uses the USD column and X/ZWG the ZWG column, exactly as printed.
-    RBZ prints no direct rate for other pairs, so those are crossed through
-    USD (the base RBZ quotes its indices against), never through ZWG.
+    X/USD uses the USD column and X/local the local-currency column (ZWG, or ZWL
+    before April 2024), exactly as printed. RBZ prints no direct rate for other
+    pairs, so those are crossed through USD (the base RBZ quotes its indices
+    against), never through the local currency.
     """
+    base = _base(day)
     f, fr = _entry(day, frm)
     t, tr = _entry(day, to)
     if f == t:
         return 1.0, "same currency"
-    if "ZWG" in (f, t):
-        if t == "ZWG":
-            n, d = _per_unit(fr, "ZWG")
+    if base in (f, t):
+        if t == base:
+            n, d = _per_unit(fr, base.lower())
         else:
-            d, n = _per_unit(tr, "ZWG")
-        return n / d, "direct (RBZ ZWG column)"
+            d, n = _per_unit(tr, base.lower())
+        return n / d, f"direct (RBZ {base} column)"
     fn, fd = _per_unit(fr, "USD")
     tn, td = _per_unit(tr, "USD")
     via = "direct (RBZ USD column)" if "USD" in (f, t) else "cross via USD (RBZ USD column)"
@@ -183,23 +201,31 @@ async def currencies(store=Depends(get_store)):
 
 @app.get("/v1/history/{code}")
 async def history(code: str, start: str = Query(..., alias="from"), end: str = Query(None, alias="to"),
+                  base: str = Query("ZWG", description="Local currency of the series: ZWG (since 5 Apr 2024) or ZWL (before)"),
                   store=Depends(get_store)):
-    """ZWG per 1 unit (mid) on every published day in the range."""
+    """Local currency per 1 unit (mid) on every published day in the range that was priced in `base`.
+    ZWL and ZWG are different currencies, so a series never mixes them."""
     end = end or dt.date.today().isoformat()
     _check_date(start, "from")
     _check_date(end, "to")
-    code = code.upper()
-    if code == "ZWG":
-        points = [{"date": d, "zwg_per_unit": 1.0} for d in await _dates(store) if start <= d <= end]
-        return {"currency": code, "points": points}
+    code, base = code.upper(), base.upper()
+    if base not in LOCAL_CURRENCIES:
+        raise HTTPException(400, f"base must be one of {', '.join(LOCAL_CURRENCIES)}")
+    field = f"{base.lower()}_per_unit"
+    if code == base:
+        usd = await store.read("history/USD.json")
+        dates = [p["date"] for p in (usd or {"points": []})["points"] if p.get("base", "ZWG") == base]
+        return {"currency": code, "base": base,
+                "points": [{"date": d, field: 1.0} for d in dates if start <= d <= end]}
     series = await store.read(f"history/{code}.json")
     if series is None:  # maybe an alias, e.g. ZMK -> ZMW
         canonical, _ = _entry(await _resolve(store, None), code)
         series = await store.read(f"history/{canonical}.json")
         if series is None:
             raise HTTPException(404, f"Unknown currency {code}")
-    points = [p for p in series["points"] if start <= p["date"] <= end]
-    return {"currency": code, "points": points}
+    points = [{"date": p["date"], field: p["mid"]} for p in series["points"]
+              if p.get("base", "ZWG") == base and start <= p["date"] <= end]
+    return {"currency": code, "base": base, "points": points}
 
 
 @app.get("/v1/convert")

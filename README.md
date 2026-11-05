@@ -37,6 +37,20 @@ Every rate is **ZWG per 1 unit of the currency**, with `bid`, `ask` and `mid`:
 Each currency also carries `usd_per_unit`, its `aliases` (ZMW/ZMK, MZN/MET),
 a `verified` flag, and `as_published` with the raw figures exactly as RBZ printed them.
 
+### Before the ZiG (2019 to 4 April 2024)
+
+Older sheets are priced in the Zimbabwe dollar, so those days have `"base": "ZWL"`
+and the field is `zwl_per_unit` instead of `zwg_per_unit`. ZWL and ZWG are different
+currencies, so the two are never mixed: converting to or from ZWG on a ZWL-era date
+returns a 404 that says which currency that day is in, and `/v1/history` returns one
+currency at a time (`?base=ZWG`, the default, or `?base=ZWL`).
+
+Some late-ZWL sheets print the local column too coarsely to check (ZAR as `0.0009`
+ZWL). Those rows are derived from RBZ's precise USD column and marked
+`"derived_from": "usd"`; if the printed figure is too coarse to confirm even that
+(`0.0001`), the row is also `verified: false` with a warning. The printed numbers
+always stay in `as_published`.
+
 ## Why the normalisation matters
 
 The RBZ sheet is not consistent about direction. Row by row:
@@ -59,7 +73,7 @@ as published, marked `"verified": false`, and listed under `warnings`.
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[api,dev]"
 python -m rbz_rates.pipeline update            # this month + last month
-python -m rbz_rates.pipeline backfill --year 2026
+python -m rbz_rates.pipeline backfill --year 2023   # any year from 2019
 python -m rbz_rates.pipeline recheck --days 30 # look for re-published PDFs further back
 python -m rbz_rates.pipeline refetch           # re-download + re-parse every known day
 uvicorn rbz_rates.api:app                      # optional HTTP API
@@ -144,10 +158,24 @@ data/daily/<date>.json, data/latest.json, data/index.json
 ```
 
 `.github/workflows/scrape.yml` runs `update` hourly during Harare business
-hours and commits new data. If RBZ changes the layout, the parser refuses to
-guess: the error and source URL go to `data/failures/`, the workflow goes red,
-and the day is retried on every run. Add a parser for the new layout in
-`parse.py` (`PARSERS`) and run `refetch`.
+hours and commits new data.
+
+### Format changes and alerts
+
+RBZ has changed the sheet many times since 2019 (title lines, header wording, three
+date styles, the local currency, filename patterns). The parser adapts to changes
+like these on its own, and refuses to guess about anything that changes what the
+numbers mean, such as a different number of columns. As a second check, a sheet
+whose figures mostly don't reconcile with its own USD rate isn't published.
+
+Every sheet's layout is fingerprinted and recorded in `data/formats.json`, with every
+currency code seen. When the scraper meets a new format (even one it parsed fine), a
+new currency, or a sheet it can't parse, the workflow opens a GitHub issue labelled
+`rbz-alert` that mentions the repo owner, so the alert arrives by email. It holds the
+date, the PDF link, what changed and the sheet's first lines. One issue per format:
+nothing is re-opened while one is open. A sheet that can't be parsed also goes to
+`data/failures/`, turns the build red and is retried every run; once `parse.py` is
+fixed, run `refetch`.
 
 RBZ's HTML pages sit behind bot protection (Radware), but the PDFs do not.
 When the listing or month page is challenged, the pipeline falls back to
@@ -167,8 +195,9 @@ revised days without a restart.
 
 ## Known limits
 
-- Only the current ZWG layout is parsed. Older sheets (ZWL / RTGS$ era, 2019-2024)
-  are recorded under `data/failures/` until their layouts are added.
+- History starts on 4 February 2019. Older sheets are found through the Internet
+  Archive's index of rbz.co.zw (their filenames follow no single pattern), so a day
+  the archive never saw is missing; the API falls back to the previous day.
 - Legacy currencies (DEM, FRF, ITL, ESP, CYP) appear because RBZ still lists them.
 - This is not an official RBZ service. Check the source PDF before relying on a
   figure for anything important.

@@ -125,6 +125,9 @@ def pipe(tmp_path, monkeypatch):
     monkeypatch.setattr(pipeline, "DATA", tmp_path)
     monkeypatch.setattr(pipeline, "DAILY", tmp_path / "daily")
     monkeypatch.setattr(pipeline, "FAILURES", tmp_path / "failures")
+    monkeypatch.setattr(pipeline, "SKIPPED", tmp_path / "skipped")
+    monkeypatch.setattr(pipeline, "FORMATS", tmp_path / "formats.json")
+    monkeypatch.setattr(pipeline, "_alerted", set())
     return pipeline
 
 
@@ -358,3 +361,188 @@ def test_key_limits_and_admin_auth(gated):
     assert s["users"] == 1 and s["active_keys"] == 3
     assert s["by_day"][0]["anonymous"] == 1 and s["by_endpoint"][0]["endpoint"] == "/v1/latest"
     assert "/admin/stats" not in gated.get("/openapi.json").text                # admin hidden from docs
+
+
+# ---------------------------------------------------------------- older (ZWL-era) sheets & format changes
+
+OLD = {name: (FIX / name).read_text() for name in
+       ("RATES_1_APRIL_2019.txt", "RATES_3_APRIL_2023.txt", "RATES_2_APRIL_2024.txt")}
+
+
+@pytest.mark.parametrize("name, date, rows", [
+    ("RATES_1_APRIL_2019.txt", dt.date(2019, 4, 1), 39),   # "Monday, April 01, 2019", no INTERBANK RATE line
+    ("RATES_3_APRIL_2023.txt", dt.date(2023, 4, 3), 40),   # "Monday, 03 April2023"
+    ("RATES_2_APRIL_2024.txt", dt.date(2024, 4, 2), 41),   # includes a pre-launch ZIG row
+])
+def test_zwl_era_sheets_parse(name, date, rows):
+    doc = parse_text(OLD[name])
+    assert doc.base == "ZWL" and doc.date == date and len(doc.rows) == rows
+    out = normalise(doc)
+    assert "zwl_per_unit" in out["rates"]["USD"] and "zwg_per_unit" not in out["rates"]["USD"]
+    assert out["rates"]["USD"]["as_published"]["zwl_orientation"] == "zwl_per_unit"
+
+
+def test_layouts_get_distinct_fingerprints():
+    fps = {parse_text(t).layout.fingerprint for t in [*OLD.values(), TEXT]}
+    assert len(fps) == 4
+
+
+def test_coarse_zwl_rows_are_derived_from_usd_column():
+    out = normalise(parse_text(OLD["RATES_2_APRIL_2024.txt"]))
+    zar = out["rates"]["ZAR"]
+    assert zar["as_published"]["zwl"]["mid"] == 0.0009                 # what RBZ printed
+    assert zar["derived_from"] == "usd" and zar["verified"] is True
+    assert zar["zwl_per_unit"]["mid"] == pytest.approx(22447.5305 / 18.9322, rel=1e-6)
+    cad = out["rates"]["CAD"]                                           # printed as 0.0001: can't confirm
+    assert cad["derived_from"] == "usd" and cad["verified"] is False
+    assert any("CAD" in w and "coarsely" in w for w in out["warnings"])
+    assert out["rates"]["ZIG"]["verified"] is False                     # genuinely inconsistent: flagged
+
+
+def test_real_inconsistency_is_kept_and_flagged():
+    out = normalise(parse_text(OLD["RATES_3_APRIL_2023.txt"]))
+    assert out["rates"]["XAU"]["verified"] is False and "derived_from" not in out["rates"]["XAU"]
+    assert any(w.startswith("XAU: published figures are not internally consistent") for w in out["warnings"])
+
+
+def test_structural_change_is_refused_with_layout():
+    seven = "\n".join(ln + " 1.0" if ln[:3].isupper() and ln[:3].isalpha() and any(c.isdigit() for c in ln) else ln
+                      for ln in TEXT.splitlines())
+    with pytest.raises(ShapeError) as e:
+        parse_text(seven)
+    assert "7" in str(e.value) and e.value.layout is not None and e.value.layout.columns.get(7)
+
+
+def test_misread_columns_are_not_published():
+    """Columns read shifted by one (e.g. a merged cell): the numbers stop reconciling, so the sheet is refused."""
+    def shift(ln):
+        parts = ln.split()
+        if len(parts) >= 7 and parts[0] != "USD" and parts[0][:3].isalpha() and parts[0][:3].isupper():
+            nums = parts[-6:]
+            return " ".join(parts[:-6] + nums[1:] + nums[:1])
+        return ln
+    with pytest.raises(ShapeError, match="don't reconcile"):
+        normalise(parse_text("\n".join(shift(ln) for ln in TEXT.splitlines())))
+
+
+def test_filename_dates():
+    assert discover.date_from_url("x/2019/Apr/5-April-2019.pdf") == dt.date(2019, 4, 5)
+    assert discover.date_from_url("x/Rates-1-April-2022.pdf") == dt.date(2022, 4, 1)
+    assert discover.date_from_url("x/RATES_03_APRIL_2023-INTERBANK_RATE.pdf") == dt.date(2023, 4, 3)
+    assert discover.date_from_url("x/notes.pdf") is None
+
+
+def test_new_format_currency_and_failure_alerts(pipe, tmp_path, monkeypatch):
+    alerts = tmp_path / "alerts.jsonl"
+    monkeypatch.setenv("RBZ_ALERTS_FILE", str(alerts))
+    monkeypatch.setattr(pipe, "FORMATS", tmp_path / "formats.json")
+    monkeypatch.setattr(pipe, "_alerted", set())
+    url = "https://www.rbz.co.zw/documents/x.pdf"
+    f = FakeFetcher({}, {url: _render_pdf(TEXT)})
+
+    assert pipe.process(f, "2026-11-05", url)               # bootstrap: registry empty, no alert
+    assert not alerts.exists()
+    assert pipe.process(f, "2026-11-05", url)               # known format, known currencies: no alert
+    assert not alerts.exists()
+
+    # a sheet with a new header wording and a new currency: published, but alerted
+    changed = TEXT.replace("CURRENCY INDICES", "CURRENCY INDEX").replace(
+        "XAF ", "XYZ 1.0000 1.0000 1.00000 26.5365 26.5365 26.5365\nXAF ", 1)
+    f.pdfs[url] = _render_pdf(changed)
+    assert pipe.process(f, "2026-11-06", url)
+    kinds = [json.loads(ln)["id"].split("-")[0] for ln in alerts.read_text().splitlines()]
+    assert kinds == ["format", "currency"]
+
+    # an unparseable sheet: not published, alerted once even if seen twice in a run
+    f.pdfs[url] = _render_pdf("\n".join(ln + " 9" if ln.startswith(("USD", "ZAR", "GBP")) else ln
+                                        for ln in TEXT.splitlines()).replace("BID", "OFFER"))
+    assert pipe.process(f, "2026-11-09", url) is False
+    assert pipe.process(f, "2026-11-10", url) is False
+    lines = [json.loads(ln) for ln in alerts.read_text().splitlines()]
+    assert [ln["id"].split("-")[0] for ln in lines] == ["format", "currency", "failure"]
+    assert "not published" in lines[-1]["body"] and url in lines[-1]["body"]
+
+
+def test_api_on_zwl_era_day(tmp_path, monkeypatch, pipe):
+    (tmp_path / "daily").mkdir()
+    for name, key in (("RATES_2_APRIL_2024.txt", "2024-04-02"), ("RATES_5_NOVEMBER_2026.txt", "2026-11-05")):
+        out = normalise(parse_text((FIX / name).read_text()))
+        out["source"] = {"url": "x", "retrieved_at": "x"}
+        (tmp_path / "daily" / f"{key}.json").write_text(json.dumps(out))
+    pipe.rebuild_indexes()
+    import rbz_rates.api as api
+    monkeypatch.setattr(api, "DATA", tmp_path)
+    api._load_file.cache_clear()
+    from fastapi.testclient import TestClient
+    c = TestClient(api.app)
+    conv = lambda f, t, d: c.get("/v1/convert", params={"amount": 1, "from": f, "to": t, "date": d})
+
+    r = conv("USD", "ZWL", "2024-04-02").json()
+    assert r["rate"] == pytest.approx(22447.5305) and r["via"] == "direct (RBZ ZWL column)"
+    assert conv("ZAR", "ZWL", "2024-04-02").json()["rate"] == pytest.approx(22447.5305 / 18.9322, rel=1e-6)  # derived
+    assert conv("USD", "ZWG", "2024-04-02").status_code == 404     # ZWG didn't exist yet
+    assert conv("USD", "ZWL", "2026-11-05").status_code == 404     # ZWL no longer does
+    assert conv("USD", "ZWG", "2026-11-05").json()["rate"] == pytest.approx(26.5365)
+
+    h = c.get("/v1/history/USD", params={"from": "2024-01-01"}).json()
+    assert h["base"] == "ZWG" and h["points"] == [{"date": "2026-11-05", "zwg_per_unit": 26.5365}]
+    h = c.get("/v1/history/USD", params={"from": "2024-01-01", "base": "ZWL"}).json()
+    assert h["points"] == [{"date": "2024-04-02", "zwl_per_unit": 22447.5305}]
+    assert c.get("/v1/history/ZWL", params={"from": "2024-01-01", "base": "ZWL"}).json()["points"][0]["zwl_per_unit"] == 1.0
+    assert c.get("/v1/history/USD", params={"from": "2024-01-01", "base": "EUR"}).status_code == 400
+
+
+def test_unlabelled_usd_row_2019():
+    """Some 2019 sheets print the USD row without its label; an index of exactly 1/1/1 identifies it."""
+    text = OLD["RATES_1_APRIL_2019.txt"].replace("USD 1 1 1.0000", "1 1 1.0000", 1)
+    doc = parse_text(text)
+    assert doc.rows[0].code == "USD" and doc.rows[0].local[2] == 3.0231
+    assert normalise(doc)["rates"]["USD"]["verified"]
+    # a label-less row that isn't 1/1/1 is not taken for anything
+    assert parse_text(text.replace("ZAR 14.2963", "14.2963", 1)).rows[1].code != "ZAR"
+
+
+def test_usd_row_out_of_step_with_crosses_2019():
+    """30 Aug 2019: every cross implies 10.52 ZWL/USD but the USD row says 10.71. Published as printed, flagged."""
+    out = normalise(parse_text((FIX / "RATES_30_AUGUST_2019.txt").read_text()))
+    assert len(out["rates"]) == 40 and not any(r["verified"] for r in out["rates"].values())
+    assert "imply 1 USD = 10.5189 ZWL" in out["warnings"][0]
+    assert out["rates"]["GBP"]["zwl_per_unit"]["mid"] == 12.8224          # as printed
+
+
+def test_usd_only_sheets_skipped_before_zig_but_alert_after(pipe, tmp_path, monkeypatch):
+    from rbz_rates.parse import NoLocalRates
+    usd_only = (FIX / "RATES_7_AUGUST_2019.txt").read_text()
+    with pytest.raises(NoLocalRates):
+        parse_text(usd_only)
+    alerts = tmp_path / "alerts.jsonl"
+    monkeypatch.setenv("RBZ_ALERTS_FILE", str(alerts))
+    url = "https://www.rbz.co.zw/documents/x.pdf"
+    f = FakeFetcher({}, {url: _render_pdf(usd_only)})
+    assert pipe.process(f, "2019-08-07", url) is None                  # skipped, not failed
+    assert (tmp_path / "skipped" / "2019-08-07.json").exists() and not alerts.exists()
+    assert pipe.process(f, "2026-11-06", url) is False                 # today: a real change
+    assert (tmp_path / "failures" / "2026-11-06.json").exists()
+    assert "failure" in alerts.read_text()
+
+
+def test_early_zig_label_duplicates_and_zeros():
+    zig = TEXT.replace("ZWG ZWG ZWG", "ZIG ZIG ZIG")                          # Apr-Jun 2024 label
+    assert parse_text(zig).base == "ZWG"
+    dup = TEXT.replace("XAF ", "ARS 822.4000 822.5000 822.45000 30.1 30.2 30.15\nXAF ", 1)
+    doc = parse_text(dup)                                                     # ARS twice (Jan 2024)
+    assert [r.code for r in doc.rows].count("ARS") == 1 and any("ARS appears twice" in w for w in doc.warnings)
+    out = normalise(parse_text((FIX / "RATES_22_FEBRUARY_2024.txt").read_text()))  # CAD printed 0.0000
+    cad = out["rates"]["CAD"]
+    assert cad["derived_from"] == "usd" and cad["verified"] is False
+    assert cad["zwl_per_unit"]["mid"] == pytest.approx(13466.4147 / 1.34805, rel=1e-6)
+
+
+def test_gold_coin_documents_are_not_rate_sheets():
+    assert discover.NOT_RATES_RE.search("27_December_2023_Gold_Coin__Token_Price.pdf")
+    assert not discover.NOT_RATES_RE.search("RATES_27_DECEMBER_2023-INTERBANK_RATE.pdf")
+
+
+def test_date_without_weekday_2025():
+    doc = parse_text((FIX / "RATES_7_JANUARY_2025.txt").read_text())   # "07 January2025"
+    assert doc.date == dt.date(2025, 1, 7) and doc.base == "ZWG"

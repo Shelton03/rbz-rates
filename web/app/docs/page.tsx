@@ -13,6 +13,7 @@ const NAV = [
   ["history", "History"],
   ["currencies", "Currencies"],
   ["fields", "Response fields"],
+  ["zwl", "Before the ZiG"],
   ["errors", "Errors"],
   ["notes", "Data notes"],
 ];
@@ -96,10 +97,10 @@ export default function Docs() {
   "via": "direct (RBZ USD column)"
 }`} />
 
-        <Endpoint id="history" path="/v1/history/{code}?from=&to=" title="History"
-          desc="ZWG per 1 unit (mid) for one currency on every published day in the range. to defaults to today. Aliases work (ZMK → ZMW)."
-          example={`curl "${API_URL}/v1/history/USD?from=2026-10-01&to=2026-10-31"`}
-          response={`{ "currency": "USD", "points": [ { "date": "2026-10-01", "zwg_per_unit": 26.7813 }, ... ] }`} />
+        <Endpoint id="history" path="/v1/history/{code}?from=&to=&base=" title="History"
+          desc="Mid rate for one currency on every published day in the range. to defaults to today; aliases work (ZMK → ZMW). A series is in one local currency: base=ZWG (default, from 5 April 2024) or base=ZWL (2019 to April 2024)."
+          example={`curl "${API_URL}/v1/history/USD?from=2026-10-01&to=2026-10-31"\ncurl "${API_URL}/v1/history/USD?from=2023-01-01&to=2023-12-31&base=ZWL"`}
+          response={`{ "currency": "USD", "base": "ZWG", "points": [ { "date": "2026-10-01", "zwg_per_unit": 26.7813 }, ... ] }`} />
 
         <Endpoint id="currencies" path="/v1/currencies" title="Currencies" desc="Codes in the latest sheet, with aliases."
           example={`curl ${API_URL}/v1/currencies`}
@@ -114,12 +115,24 @@ export default function Docs() {
               ["verified", "true when the row's figures agree with the USD rate (within 1%). false rows are kept as published and listed in warnings."],
               ["source", "The RBZ PDF the day came from, its sha256 and when it was fetched."],
               ["revisions", "Present only if RBZ re-published the day's PDF: the earlier versions' sha256 and timestamps."],
+              ["derived_from", "Present only on rows RBZ printed too coarsely to use (some 2023–24 ZWL sheets): the rate was computed from RBZ's USD column instead."],
             ].map(([k, v]) => (
               <div key={k} className="grid gap-1 px-4 py-3 sm:grid-cols-[10rem_1fr]">
                 <dt className="font-mono text-xs font-medium">{k}</dt><dd className="text-muted-foreground">{v}</dd>
               </div>
             ))}
           </dl>
+        </Section>
+
+        <Section id="zwl" title="Before the ZiG (2019 to April 2024)">
+          <p className="text-muted-foreground">
+            Sheets from 4 February 2019 to 4 April 2024 are priced in the Zimbabwe dollar. Those days have{" "}
+            <code className="font-mono text-sm">&quot;base&quot;: &quot;ZWL&quot;</code> and the field is{" "}
+            <code className="font-mono text-sm">zwl_per_unit</code> instead of <code className="font-mono text-sm">zwg_per_unit</code>.
+            The two currencies are never mixed: converting to or from ZWG on a ZWL-era date returns a 404 that says which
+            currency that day is in, and history returns one currency at a time.
+          </p>
+          <CodeBlock title="Request" code={`curl "${API_URL}/v1/convert?amount=100&from=USD&to=ZWL&date=2023-04-03"`} />
         </Section>
 
         <Section id="errors" title="Errors">
@@ -137,6 +150,7 @@ export default function Docs() {
             <li>Rates appear within the hour RBZ publishes them, on business days (Harare time).</li>
             <li>If RBZ corrects a day by re-uploading its PDF, the new figures replace the old ones and the change is recorded under <code className="font-mono text-sm">revisions</code>.</li>
             <li>Legacy currencies (DEM, FRF, ITL, ESP) appear because RBZ still lists them.</li>
+            <li>When RBZ changes the sheet&apos;s format, the parser adapts to cosmetic changes and refuses to publish anything it can&apos;t read safely; the maintainer is alerted either way.</li>
             <li>This is not an official RBZ service. Check the source PDF before relying on a figure.</li>
           </ul>
         </Section>

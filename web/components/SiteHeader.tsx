@@ -25,6 +25,9 @@ export async function SiteHeader() {
           <Link href="/#rates" className="hidden rounded-md px-3 py-2 text-muted-foreground hover:text-foreground sm:block">
             Rates
           </Link>
+          <Link href="/history" className="rounded-md px-3 py-2 text-muted-foreground hover:text-foreground">
+            History
+          </Link>
           <Link href="/docs" className="rounded-md px-3 py-2 text-muted-foreground hover:text-foreground">
             Docs
           </Link>

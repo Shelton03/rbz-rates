@@ -17,6 +17,12 @@ the most recent days with a conditional request (ETag / Last-Modified, so an
 unchanged file costs a 304 and no download). If the PDF changed, the day is
 re-parsed and the previous version is recorded under "revisions" in its JSON.
 `recheck` does the same over a longer window.
+
+Format changes: every sheet's layout is fingerprinted (see parse.Layout) and
+recorded in data/formats.json, along with every currency code seen. The first
+time a new format or currency appears, or a sheet can't be parsed, an alert is
+printed and, if RBZ_ALERTS_FILE is set, appended to it as a JSON line; the
+scrape workflow turns those into GitHub issues that notify the owner by email.
 """
 from __future__ import annotations
 
@@ -33,10 +39,12 @@ import httpx
 from . import discover
 from .fetch import Blocked, NotFound
 from .normalize import normalise
-from .parse import ShapeError, parse_pdf
+from .parse import Layout, NoLocalRates, ShapeError, parse_text, pdf_to_text
 
 DATA = Path(os.environ.get("RBZ_DATA_DIR", "data"))
-DAILY, FAILURES = DATA / "daily", DATA / "failures"
+DAILY, FAILURES, SKIPPED = DATA / "daily", DATA / "failures", DATA / "skipped"
+FORMATS = DATA / "formats.json"
+ZIG_LAUNCH = dt.date(2024, 4, 5)  # first ZWG sheet; before this RBZ priced in ZWL / RTGS$
 
 
 def _write_json(path: Path, obj) -> None:
@@ -61,6 +69,78 @@ def _fail(key: str, error: str, source: dict) -> bool:
     return False
 
 
+# ---------------------------------------------------------------- format registry & alerts
+
+_alerted: set[str] = set()
+
+
+def _alert(alert_id: str, title: str, body: str) -> None:
+    """Report something the owner should look at, once per run per id."""
+    if alert_id in _alerted:
+        return
+    _alerted.add(alert_id)
+    print(f"ALERT {title}", file=sys.stderr)
+    path = os.environ.get("RBZ_ALERTS_FILE")
+    if path:
+        with open(path, "a") as f:
+            f.write(json.dumps({"id": alert_id, "title": title, "body": body}) + "\n")
+
+
+def _registry() -> dict:
+    reg = json.loads(FORMATS.read_text()) if FORMATS.exists() else {}
+    reg.setdefault("formats", {})
+    reg.setdefault("currencies", {})
+    return reg
+
+
+def _layout_md(layout: Layout | None) -> str:
+    if layout is None:
+        return "_No layout could be read from the file._"
+    cols = ", ".join(f"{c} rows with {n} numbers" for n, c in sorted(layout.columns.items())) or "no rows"
+    head = "\n".join(layout.head)
+    return (f"- Local currency: `{layout.base}`\n- Header: `{layout.header or '(none found)'}`\n"
+            f"- Rows: {cols}\n- Date style: `{layout.date_style}`\n"
+            f"- \"INTERBANK RATE\" title line: {'yes' if layout.interbank_title else 'no'}\n"
+            f"- Fingerprint: `{layout.fingerprint}` (`{layout.signature}`)\n\n"
+            f"First lines of the sheet:\n\n```text\n{head}\n```")
+
+
+def _record_success(key: str, url: str, layout: Layout, codes: list[str]) -> None:
+    reg = _registry()
+    fp = layout.fingerprint
+    entry = reg["formats"].get(fp)
+    if entry is None:
+        reg["formats"][fp] = {"signature": layout.signature, "base": layout.base,
+                              "first_seen": key, "last_seen": key, "example": url}
+        if reg["currencies"]:  # an empty registry is being bootstrapped: nothing to compare with
+            _alert(f"format-{fp}", f"New RBZ sheet format {fp} (parsed OK) on {key}",
+                   f"The sheet for **{key}** uses a layout not seen before. It parsed and every check "
+                   f"passed, so it has been published, but please give it a look.\n\n- PDF: {url}\n"
+                   f"{_layout_md(layout)}")
+    else:
+        entry["first_seen"], entry["last_seen"] = min(entry["first_seen"], key), max(entry["last_seen"], key)
+    new_codes = [c for c in codes if c not in reg["currencies"]]
+    if new_codes and reg["currencies"]:
+        _alert(f"currency-{'-'.join(sorted(new_codes))}",
+               f"New currency on the RBZ sheet: {', '.join(sorted(new_codes))} ({key})",
+               f"The sheet for **{key}** lists {', '.join(sorted(new_codes))}, which hasn't appeared before. "
+               f"It has been published as usual.\n\n- PDF: {url}")
+    for c in codes:
+        seen = reg["currencies"].setdefault(c, {"first_seen": key, "last_seen": key})
+        seen["first_seen"], seen["last_seen"] = min(seen["first_seen"], key), max(seen["last_seen"], key)
+    _write_json(FORMATS, reg)
+
+
+def _record_failure(key: str, url: str, error: str, layout: Layout | None) -> None:
+    fp = layout.fingerprint if layout else "unreadable"
+    _alert(f"failure-{fp}", f"RBZ sheet could not be parsed: format {fp} ({key})",
+           f"The sheet for **{key}** was **not published**: {error}\n\n- PDF: {url}\n{_layout_md(layout)}\n\n"
+           "If RBZ changed the layout, adjust `rbz_rates/parse.py` and run `python -m rbz_rates.pipeline refetch`. "
+           "Days that fail are retried on every run.")
+
+
+# ---------------------------------------------------------------- ingest
+
 def _ingest(key: str, url: str, fetched) -> bool:
     """Parse PDF bytes held in memory and write the day's JSON. The bytes are
     dropped as soon as they are parsed; nothing PDF-shaped touches disk.
@@ -71,12 +151,26 @@ def _ingest(key: str, url: str, fetched) -> bool:
     source = {"url": url, "retrieved_at": _now(), "sha256": hashlib.sha256(fetched.content).hexdigest(),
               "etag": fetched.etag, "last_modified": fetched.last_modified}
     try:
-        doc = parse_pdf(fetched.content)
-    except Exception as e:  # ShapeError, or anything pdfminer raises on a damaged file
-        return _fail(key, f"{type(e).__name__}: {e}" if not isinstance(e, ShapeError) else str(e), source)
+        text = pdf_to_text(fetched.content)
+        doc = parse_text(text)
+        out = normalise(doc)
+    except NoLocalRates as e:
+        if dt.date.fromisoformat(key) < ZIG_LAUNCH:
+            # some 2019 sheets carry USD cross rates only: nothing to publish, nothing wrong
+            _write_json(SKIPPED / f"{key}.json", {"date": key, "reason": str(e), "source": source})
+            (FAILURES / f"{key}.json").unlink(missing_ok=True)
+            print(f"skipped {key}: {e}")
+            return None
+        _record_failure(key, url, str(e), e.layout)  # today this would mean RBZ dropped the local rates
+        return _fail(key, str(e), source)
+    except ShapeError as e:
+        _record_failure(key, url, str(e), e.layout)
+        return _fail(key, str(e), source)
+    except Exception as e:  # anything pdfminer raises on a damaged file
+        _record_failure(key, url, f"{type(e).__name__}: {e}", None)
+        return _fail(key, f"{type(e).__name__}: {e}", source)
     finally:
         fetched.content = None  # never persisted
-    out = normalise(doc)
     if out["date"] != key:
         out["warnings"].append(f"PDF says {out['date']} but listed as {key}; using listing date")
         out["date"] = key
@@ -87,27 +181,33 @@ def _ingest(key: str, url: str, fetched) -> bool:
     if previous and previous["source"].get("sha256") != source["sha256"]:
         old = previous["source"]
         revisions = revisions + [{k: old.get(k) for k in ("sha256", "retrieved_at", "last_modified")}]
+        field = f"{out['base'].lower()}_per_unit"
         changed = sorted(c for c in out["rates"]
-                         if out["rates"][c]["zwg_per_unit"] != previous["rates"].get(c, {}).get("zwg_per_unit"))
+                         if out["rates"][c][field] != previous["rates"].get(c, {}).get(field))
         print(f"REVISED {key}: RBZ re-published the PDF; changed rates: {', '.join(changed) or 'none'}")
     if revisions:
         out["revisions"] = revisions
 
     _write_json(DAILY / f"{key}.json", out)
     (FAILURES / f"{key}.json").unlink(missing_ok=True)
-    print(f"parsed {key}: {len(out['rates'])} currencies, {len(out['warnings'])} warnings")
+    _record_success(key, url, doc.layout, list(out["rates"]))
+    print(f"parsed {key}: {out['base']}, {len(out['rates'])} currencies, {len(out['warnings'])} warnings")
     return True
 
 
-def process(fetcher, key: str, url: str, missing_ok: bool = False) -> bool | None:
+def process(fetcher, key: str, url: str, missing_ok: bool = False, fallback: str | None = None) -> bool | None:
     """Download one PDF into memory, parse it, write its JSON.
 
     True on success, False on failure (recorded in data/failures/), None if the
     PDF does not exist and missing_ok is set (probing a day RBZ hasn't published).
+    fallback: another copy of the same file (the Internet Archive's) to use if RBZ returns 404.
     """
     try:
         fetched = fetcher.pdf(url)
     except NotFound as e:
+        if fallback:
+            print(f"{key}: not at {url}; using the Internet Archive's copy", file=sys.stderr)
+            return process(fetcher, key, fallback, missing_ok)
         return None if missing_ok else _fail(key, f"404 {e}", {"url": url, "retrieved_at": _now()})
     except (ValueError, OSError, httpx.HTTPError, Blocked) as e:
         return _fail(key, str(e), {"url": url, "retrieved_at": _now()})
@@ -175,10 +275,11 @@ def process_month(fetcher, year: int, month: int, month_url: str | None, force=F
 
 
 def _weekday_urls(year: int, month: int) -> dict[dt.date, str]:
+    """Guessed URLs for each weekday; only meaningful in the ZWG era, whose filenames follow one pattern."""
     today = dt.date.today()
     day, out = dt.date(year, month, 1), {}
     while day.month == month and day <= today:
-        if day.weekday() < 5:
+        if day.weekday() < 5 and day >= ZIG_LAUNCH:
             out[day] = discover.guess_pdf_url(day)
         day += dt.timedelta(days=1)
     return out
@@ -217,7 +318,8 @@ def rebuild_indexes() -> None:
         for code, r in day["rates"].items():
             s = series.setdefault(code, {"currency": code, "aliases": r["aliases"], "points": []})
             s["aliases"] = r["aliases"]
-            s["points"].append({"date": key, "zwg_per_unit": r["zwg_per_unit"]["mid"]})
+            base = day.get("base", "ZWG")
+            s["points"].append({"date": key, "base": base, "mid": r[f"{base.lower()}_per_unit"]["mid"]})
     if day is not None:
         _write_json(DATA / "latest.json", day)
     for code, s in series.items():
@@ -243,18 +345,42 @@ def cmd_update(args) -> int:
     return 1 if failed else 0
 
 
+def _archived_with_retry(fetcher, year: int) -> dict[dt.date, str]:
+    import time
+
+    for attempt in range(5):
+        try:
+            return discover.archived_pdf_urls(fetcher, year)
+        except (ValueError, OSError, httpx.HTTPError, Blocked) as e:
+            print(f"archive index for {year} unavailable ({str(e)[:80]}); retry {attempt + 1}/5", file=sys.stderr)
+            time.sleep(60)
+    print(f"archive index for {year} still unavailable; only guessed ZWG-era URLs will be tried", file=sys.stderr)
+    return {}
+
+
 def cmd_backfill(args) -> int:
+    """Fetch a whole year (or month): exact URLs from the Internet Archive's index of
+    rbz.co.zw (older filenames follow no single pattern), plus guessed URLs for any
+    ZWG-era weekday the archive missed. PDFs are fetched from rbz.co.zw."""
     from .fetch import Fetcher
 
-    f = Fetcher()
-    months = _month_pages(f, discover.LISTING_URL + "?limit=0")
-    today = dt.date.today()
-    candidates = months or {(args.year, m): None for m in range(1, 13)
-                            if (args.year, m) <= (today.year, today.month)}
-    wanted = [ym for ym in sorted(candidates) if ym[0] == args.year and (args.month is None or ym[1] == args.month)]
+    f = Fetcher(timeout=90)
+    archived = {d: urls for d, urls in _archived_with_retry(f, args.year).items()
+                if args.month is None or d.month == args.month}
+    guessed = {}
+    for m in ([args.month] if args.month else range(1, 13)):
+        if (args.year, m) <= (dt.date.today().year, dt.date.today().month):
+            guessed.update({d: u for d, u in _weekday_urls(args.year, m).items() if d not in archived})
+    print(f"backfill {args.year}{'-%02d' % args.month if args.month else ''}: "
+          f"{len(archived)} sheets in the archive index, {len(guessed)} guessed ZWG-era days")
     failed = []
-    for ym in wanted:
-        failed += process_month(f, *ym, candidates[ym], force=args.force)
+    targets = {**{d: (u, None) for d, u in guessed.items()}, **archived}
+    for day, (url, copy) in sorted(targets.items()):
+        key = day.isoformat()
+        if ((DAILY / f"{key}.json").exists() or (SKIPPED / f"{key}.json").exists()) and not args.force:
+            continue
+        if process(f, key, url, missing_ok=day in guessed, fallback=copy) is False:
+            failed.append(key)
     rebuild_indexes()
     return 1 if failed else 0
 

@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  issues: write   # alerts about new sheet formats are opened as issues (GitHub emails the owner)
 concurrency: scrape
 jobs:
   scrape:
@@ -20,6 +21,24 @@ jobs:
       - id: run
         run: python -m rbz_rates.pipeline update
         continue-on-error: true
+        env:
+          RBZ_ALERTS_FILE: ${{ runner.temp }}/alerts.jsonl
+      - name: Open an issue for each new format, currency or parse failure (emails the owner)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ALERTS: ${{ runner.temp }}/alerts.jsonl
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          [ -s "$ALERTS" ] || { echo "no alerts"; exit 0; }
+          gh label create rbz-alert --color d93f0b --description "Automatic alert from the scraper" 2>/dev/null || true
+          open=$(gh issue list --label rbz-alert --state open --limit 200 --json title --jq '.[].title')
+          while IFS= read -r line; do
+            id=$(jq -r .id <<<"$line")
+            if grep -qF "[$id]" <<<"$open"; then echo "already open: $id"; continue; fi
+            { jq -r .body <<<"$line"; printf '\n\ncc @%s\n' "$OWNER"; } > "$RUNNER_TEMP/body.md"
+            gh issue create --title "$(jq -r .title <<<"$line") [$id]" --label rbz-alert --body-file "$RUNNER_TEMP/body.md"
+          done < "$ALERTS"
       - name: Commit new data
         id: commit
         run: |
